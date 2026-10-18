@@ -7,7 +7,7 @@
 <meta name="description" content="Login and registration for sapkotap.com.np">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="icon" type="image/jpeg" href="favicon.jpg">
+<link rel="icon" type="image/jpeg" href="favicon.png">
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 
@@ -325,6 +325,69 @@
 .queue-chip.done .qmeta { color:var(--good); }
 .queue-chip.failed .qmeta { color:var(--danger); }
 
+
+/* ================= MOBILE / PHONE LAYOUT ================= */
+@media (max-width: 760px){
+  html, body{ overflow-x:hidden; }
+  .top{ padding:10px 14px !important; }
+  .backlink{ padding:7px 12px; font-size:.78rem; }
+  .portal-container{ padding:16px 14px !important; margin:0 auto !important; max-width:100% !important; border-radius:0 !important; }
+  .panel-right{ padding:16px 12px; }
+  .card{ padding:20px 16px; }
+
+  /* phones zoom the page when a field is under 16px: stop that */
+  input, select, textarea{ font-size:16px !important; }
+  button, .btn, .btn-outline, .admin-pill{ min-height:40px; }
+
+  /* header row: name on top, sign out below */
+  #dashboardWrap > div:first-child{ flex-wrap:wrap; gap:10px; }
+  #userWelcome{ font-size:1.15rem; word-break:break-word; }
+  #userMeta{ word-break:break-word; }
+
+  /* main dashboard tabs + admin pills: one scrollable strip, never wrapping into a block */
+  #dashboardWrap > div:nth-child(2){ flex-wrap:nowrap !important; -webkit-overflow-scrolling:touch; }
+  #dashboardWrap > div:nth-child(2) button{ flex:0 0 auto; white-space:nowrap; }
+  #adminArea > div:nth-of-type(3){ flex-wrap:nowrap !important; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:6px; }
+  .admin-pill{ flex:0 0 auto; white-space:nowrap; }
+
+  /* admin: two-column cards become one column; stat cards two per row */
+  #adminTab-users > div[style*="grid-template-columns:1fr 1fr"]{ grid-template-columns:1fr !important; }
+  .react-stat-grid{ grid-template-columns:repeat(2, 1fr) !important; gap:10px; }
+  .react-stat-card{ padding:12px 14px; }
+
+  /* tables: swipe sideways instead of squashing */
+  table{ display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; font-size:.78rem; }
+  th, td{ padding:8px 8px; }
+
+  /* direct chat: contacts become a strip on top, conversation gets the screen */
+  #tabContentChat > div[style*="grid-template-columns:200px 1fr"]{ grid-template-columns:1fr !important; gap:0 !important; }
+  #tabContentChat > div[style*="grid-template-columns:200px 1fr"] > div:first-child{
+    border-right:none !important; border-bottom:1px solid var(--border-solid); padding:8px 10px !important;
+  }
+  #acceptedContactsList{
+    display:flex !important; flex-direction:row; gap:8px; overflow-x:auto; flex:none !important;
+    -webkit-overflow-scrolling:touch; padding-bottom:4px;
+  }
+  #acceptedContactsList > *{ flex:0 0 auto; white-space:nowrap; }
+  #chatMessagesBox{ max-height:none !important; height:calc(100dvh - 400px); min-height:240px; }
+  #chatInputBar{ gap:6px !important; }
+  #chatInputBar input[type="text"]{ min-width:0; }
+  #chatInputBar .btn{ padding:0 12px !important; }
+
+  /* community chat */
+  #communityMessagesBox{ max-height:none !important; height:calc(100dvh - 430px); min-height:260px; }
+  #communityNameInput{ min-width:0 !important; width:100%; flex-basis:100% !important; }
+
+  /* pop-up windows (suspend, admin type...) fit the screen */
+  #modDialogOverlay > div, #permDialogOverlay > div{ max-width:100% !important; padding:16px !important; }
+
+  /* long words / emails never push the page wider */
+  td, th, #userMeta, #chatMessagesBox, #communityMessagesBox{ overflow-wrap:anywhere; }
+  img, audio, video{ max-width:100%; }
+}
+@media (max-width: 380px){
+  .react-stat-grid{ grid-template-columns:1fr !important; }
+}
 </style>
 </head>
 <body data-theme="light">
@@ -826,7 +889,7 @@
           </div>
 
           <!-- Send File / Folder -->
-          <div style="background:var(--surface-2); border:1px solid var(--border-solid); border-radius:10px; padding:16px;">
+          <div id="adminSendFilesCard" style="background:var(--surface-2); border:1px solid var(--border-solid); border-radius:10px; padding:16px;">
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--cyan);">Send Secure Files to User</h4>
             <select id="adminUserSelect" class="field" style="margin:0 0 10px;"><option value="">Select target user...</option></select>
 
@@ -846,6 +909,22 @@
 
             <button type="button" class="btn" id="btnAdminUpload" style="padding:8px 0; margin-top:12px; display:none;">Upload All</button>
             <div id="adminUploadNotice" style="font-size:0.78rem; margin-top:8px;"></div>
+          </div>
+        </div>
+
+        <div id="adminTypesCard" style="display:none; background:var(--surface-2); border:1px solid var(--border-solid); border-radius:10px; padding:16px; margin-bottom:18px;">
+          <h4 style="margin:0 0 6px 0; font-size:0.9rem; color:var(--cyan);">Admin types</h4>
+          <p style="font-size:0.78rem; color:var(--muted); margin:0 0 10px;">Create types of admin with different abilities (for example "General Inspection Admin"), then give each admin a type with the <strong>Admin type</strong> button in the table below. Attacks, login IPs, roles, adding and deleting users, and PIN resets always stay with you.</p>
+          <div id="adminTypesList" style="margin-bottom:12px;"></div>
+          <div style="border-top:1px solid var(--border-solid); padding-top:12px;">
+            <input type="hidden" id="atEditId">
+            <input type="text" id="atName" class="field" maxlength="40" placeholder="Type name, e.g. General Inspection Admin" style="margin:0 0 8px;">
+            <div id="atPerms" style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;"></div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <button type="button" class="btn" id="atSave" style="width:auto; padding:6px 16px;">Save type</button>
+              <button type="button" class="btn btn-outline" id="atReset" style="width:auto; padding:6px 16px;">New type</button>
+              <span id="atNotice" style="font-size:0.8rem;"></span>
+            </div>
           </div>
         </div>
 
@@ -1680,15 +1759,27 @@
   };
 
   // Normal admins never see Attacks or Moderation unless the owner granted a permission.
+  const PERM_LABELS = {
+    support:      'Support inbox: read and reply to user tickets',
+    files:        'Secure files: send files to users and see sent files',
+    suspend:      'Suspend / ban users (with reason + photo evidence)',
+    inspection:   'General inspection: reported community messages + community chat history',
+    user_reports: 'Reported users: see and dismiss user reports'
+  };
+  const PERM_SHORT = { support: 'Support', files: 'Files', suspend: 'Suspend', inspection: 'Inspection', user_reports: 'Reports' };
+
+  // Each admin sees only what their admin type allows. The database enforces the same rules.
   function applyAdminPermissions(isOwner, perms){
-    const canInspect = isOwner || perms.includes('inspection');
-    const canReports = isOwner || perms.includes('user_reports');
+    const has = (x) => isOwner || perms.includes(x);
     const setTab = (name, on) => { const b = document.querySelector('[data-admintab="' + name + '"]'); if(b) b.style.display = on ? '' : 'none'; };
     setTab('attacks', isOwner);
-    setTab('community', canInspect || canReports);
+    setTab('activity', has('support'));
+    setTab('files', has('files'));
+    setTab('community', has('inspection') || has('user_reports'));
+    const sendCard = document.getElementById('adminSendFilesCard'); if(sendCard) sendCard.style.display = has('files') ? '' : 'none';
     const pane = document.getElementById('adminTab-community');
     if(pane){
-      const rules = { 'Reported Messages': canInspect, 'Admin Suspensions': isOwner, 'Reported Users': canReports, 'User Chat History': canInspect };
+      const rules = { 'Reported Messages': has('inspection'), 'Admin Suspensions': isOwner, 'Reported Users': has('user_reports'), 'User Chat History': has('inspection') };
       pane.querySelectorAll('h4').forEach(h => {
         const key = Object.keys(rules).find(k => h.textContent.trim().startsWith(k));
         if(!key) return;
@@ -1700,6 +1791,9 @@
         }
       });
     }
+    // if the tab they were on is now hidden, go back to Overview
+    const act = document.querySelector('.admin-pill.active');
+    if(act && act.style.display === 'none'){ const ov = document.querySelector('[data-admintab="overview"]'); if(ov) ov.click(); }
   }
 
   function showAdminErrors(list){
@@ -1719,7 +1813,9 @@
     }
   }
 
+  let adminDashRunId = 0;
   async function loadAdminDashboard(isMainAdmin){
+    const runId = ++adminDashRunId;
     const thActions = document.getElementById('thActions');
     if(thActions) thActions.style.display = isMainAdmin ? 'table-cell' : 'none';
     const addCard = document.getElementById('adminAddUserCard');
@@ -1762,21 +1858,37 @@
 
     const sel = document.getElementById('adminUserSelect');
     const tbody = document.getElementById('adminUsersTbody');
-    sel.innerHTML = '<option value="">Select target user...</option>';
-    tbody.innerHTML = '';
     const secSel = document.getElementById('adminSecResetSelect');
     const secCard = document.getElementById('adminSecResetCard');
     if(secCard) secCard.style.display = isMainAdmin ? 'block' : 'none';
-    if(secSel) secSel.innerHTML = '<option value="">Select user...</option>';
 
-    // Admin permissions: the owner sees everyone's, a normal admin only their own
-    let permMap = {}; let myPerms = [];
-    try{
-      const { data: pr } = await supabase.from('admin_permissions').select('user_id, permission');
-      (pr || []).forEach(x => { (permMap[x.user_id] = permMap[x.user_id] || []).push(x.permission); });
-      if(!isMainAdmin) myPerms = permMap[sessionUser.id] || [];
-    }catch(e){ console.warn('admin_permissions not available yet', e); }
+    // What can this admin do? (the database decides; the owner can do everything)
+    let permMap = {}; let myPerms = []; let typeNameOf = () => '';
+    try{ const { data: mp } = await supabase.rpc('my_admin_perms'); myPerms = mp || []; }catch(e){ console.warn('my_admin_perms not available yet', e); }
+    if(isMainAdmin){
+      try{
+        const [pr, ty, ut] = await Promise.all([
+          supabase.from('admin_permissions').select('user_id, permission'),
+          supabase.from('admin_types').select('*'),
+          supabase.from('admin_user_types').select('user_id, type_id')
+        ]);
+        (pr.data || []).forEach(x => { (permMap[x.user_id] = permMap[x.user_id] || []).push(x.permission); });
+        const names = {}; let defName = '';
+        (ty.data || []).forEach(t => { names[t.id] = t.name; if(t.is_default) defName = t.name; });
+        const assigned = {}; (ut.data || []).forEach(a => assigned[a.user_id] = a.type_id);
+        typeNameOf = (uid) => names[assigned[uid]] || defName;
+      }catch(e){ console.warn('admin types not available yet', e); }
+    }
+    const canSuspend = isMainAdmin || myPerms.includes('suspend');
     applyAdminPermissions(isMainAdmin, myPerms);
+    const typesCard = document.getElementById('adminTypesCard'); if(typesCard) typesCard.style.display = isMainAdmin ? 'block' : 'none';
+
+    // If the console was refreshed again while we waited, the newer run owns the list.
+    if(runId !== adminDashRunId) return;
+    // Clear and refill the lists in one go (no waiting in between), so two loads can never stack rows.
+    sel.innerHTML = '<option value="">Select target user...</option>';
+    tbody.innerHTML = '';
+    if(secSel) secSel.innerHTML = '<option value="">Select user...</option>';
     if(users){
       users.forEach(u => {
         const opt = document.createElement('option');
@@ -1795,7 +1907,7 @@
             const roleButton = r === 'admin'
               ? `<button type="button" class="btn btn-outline" style="padding:4px 10px; font-size:0.75rem; border-color:var(--danger); color:var(--danger);" onclick="window.changeUserRole('${u.id}', 'user')">Demote to User</button>`
               : `<button type="button" class="btn btn-outline" style="padding:4px 10px; font-size:0.75rem; border-color:var(--violet); color:var(--violet);" onclick="window.changeUserRole('${u.id}', 'admin')">Make Admin</button>`;
-            actionHtml = `${roleButton} ${r === 'admin' ? `<button type="button" class="btn btn-outline" data-perms-uid="${sanitize(u.id)}" data-uname="${sanitize(u.username)}" style="padding:4px 10px; font-size:0.75rem; border-color:var(--cyan); color:var(--cyan);">Permissions</button>` : ''} <button type="button" class="btn btn-outline js-delete-user" data-uid="${sanitize(u.id)}" data-uname="${sanitize(u.username)}" style="padding:4px 10px; font-size:0.75rem; border-color:var(--danger); color:var(--danger);">Delete User</button>`;
+            actionHtml = `${roleButton} ${r === 'admin' ? `<button type="button" class="btn btn-outline" data-perms-uid="${sanitize(u.id)}" data-uname="${sanitize(u.username)}" style="padding:4px 10px; font-size:0.75rem; border-color:var(--cyan); color:var(--cyan);">Admin type</button>` : ''} <button type="button" class="btn btn-outline js-delete-user" data-uid="${sanitize(u.id)}" data-uname="${sanitize(u.username)}" style="padding:4px 10px; font-size:0.75rem; border-color:var(--danger); color:var(--danger);">Delete User</button>`;
           }
         }
 
@@ -1824,10 +1936,10 @@
           <td>${sanitize(u.full_name)}</td>
           <td>@${sanitize(u.username)}</td>
           <td>${sanitize(u.email)}</td>
-          <td><span style="color:${r==='admin'?'var(--cyan)':'var(--muted)'}; font-weight:600;">${r}</span>${(permMap[u.id] && permMap[u.id].length) ? `<div style="font-size:0.68rem; color:var(--muted);">${permMap[u.id].map(x => x === 'inspection' ? 'General inspection' : (x === 'user_reports' ? 'Reported users' : x)).join(', ')}</div>` : ''}</td>
+          <td><span style="color:${r==='admin'?'var(--cyan)':'var(--muted)'}; font-weight:600;">${r}</span>${(isMainAdmin && r === 'admin' && !isTargetMainAdmin) ? `<div style="font-size:0.68rem; color:var(--muted);">${sanitize(typeNameOf(u.id))}${(permMap[u.id] || []).map(x => ' + ' + sanitize(PERM_SHORT[x] || x)).join('')}</div>` : ''}</td>
           <td>${new Date(u.created_at).toLocaleDateString()}</td>
           <td>${secHtml}</td>
-          <td>${(r === 'admin' || isTargetMainAdmin || u.id === sessionUser.id) ? '<span style="color:var(--muted); font-size:0.75rem;">–</span>' : `<button type="button" class="btn btn-outline" data-moderate="${sanitize(u.id)}" data-uname="${sanitize(u.username)}" style="padding:3px 10px; font-size:0.72rem; width:auto; border-color:var(--danger); color:var(--danger);">Suspend / Ban</button>`}</td>
+          <td>${(r === 'admin' || isTargetMainAdmin || u.id === sessionUser.id || !canSuspend) ? '<span style="color:var(--muted); font-size:0.75rem;">–</span>' : `<button type="button" class="btn btn-outline" data-moderate="${sanitize(u.id)}" data-uname="${sanitize(u.username)}" style="padding:3px 10px; font-size:0.72rem; width:auto; border-color:var(--danger); color:var(--danger);">Suspend / Ban</button>`}</td>
           ${isMainAdmin ? `<td>${actionHtml}</td>` : ''}
         </tr>`;
       });
@@ -1938,7 +2050,7 @@
 
     // 4. Moderation tab — user picker for chat-history lookups + reports list
     populateModUserSelect();
-    loadCommunityReports(); loadUserReports(); loadAdminActions();
+    loadCommunityReports(); loadUserReports(); loadAdminActions(); loadAdminTypes();
   }
 
   async function loadUserReports(){
@@ -1965,6 +2077,73 @@
       }));
     }catch(e){
       tb.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--danger); font-size:0.78rem;">Could not load reports: ' + escapeHtml(e.message || String(e)) + '</td></tr>';
+    }
+  }
+
+  async function loadAdminTypes(){
+    const list = document.getElementById('adminTypesList');
+    const permBox = document.getElementById('atPerms');
+    if(!list || !permBox || !supabase) return;
+    if(!permBox.dataset.built){
+      permBox.dataset.built = '1';
+      permBox.innerHTML = Object.keys(PERM_LABELS).map(k => `<label style="display:flex; gap:8px; align-items:flex-start; font-size:0.82rem;"><input type="checkbox" data-atperm="${k}" style="margin-top:3px;"><span>${escapeHtml(PERM_LABELS[k])}</span></label>`).join('');
+      const notice = document.getElementById('atNotice');
+      const reset = () => {
+        document.getElementById('atEditId').value = '';
+        document.getElementById('atName').value = '';
+        document.getElementById('atName').disabled = false;
+        permBox.querySelectorAll('[data-atperm]').forEach(c => c.checked = false);
+        notice.textContent = '';
+      };
+      document.getElementById('atReset').addEventListener('click', reset);
+      document.getElementById('atSave').addEventListener('click', async () => {
+        const name = document.getElementById('atName').value.trim();
+        const perms = [...permBox.querySelectorAll('[data-atperm]')].filter(c => c.checked).map(c => c.getAttribute('data-atperm'));
+        const id = document.getElementById('atEditId').value || null;
+        if(name.length < 2){ notice.style.color = 'var(--danger)'; notice.textContent = 'Give the type a name (2 to 40 characters).'; return; }
+        const { error } = await supabase.rpc('admin_save_type', { p_name: name, p_perms: perms, p_id: id });
+        if(error){ notice.style.color = 'var(--danger)'; notice.textContent = error.message; return; }
+        reset(); notice.style.color = 'var(--good)'; notice.textContent = 'Saved.';
+        loadAdminTypes(); loadAdminDashboard(true);
+      });
+      list.addEventListener('click', async (e) => {
+        const ed = e.target.closest('[data-at-edit]');
+        const de = e.target.closest('[data-at-delete]');
+        if(ed){
+          const t = (window.__adminTypesCache || []).find(x => x.id === ed.getAttribute('data-at-edit'));
+          if(!t) return;
+          document.getElementById('atEditId').value = t.id;
+          document.getElementById('atName').value = t.name;
+          document.getElementById('atName').disabled = !!t.is_default;
+          permBox.querySelectorAll('[data-atperm]').forEach(c => c.checked = t.permissions.includes(c.getAttribute('data-atperm')));
+          notice.style.color = 'var(--muted)'; notice.textContent = 'Editing "' + t.name + '". Press Save type when done.';
+        }
+        if(de){
+          if(!confirm('Delete this admin type? Admins using it go back to the default type.')) return;
+          const { error } = await supabase.rpc('admin_delete_type', { p_id: de.getAttribute('data-at-delete') });
+          if(error){ alert('Could not delete: ' + error.message); return; }
+          loadAdminTypes(); loadAdminDashboard(true);
+        }
+      });
+    }
+    try{
+      const { data, error } = await supabase.from('admin_types').select('*');
+      if(error) throw error;
+      const types = (data || []).slice().sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0) || a.name.localeCompare(b.name));
+      window.__adminTypesCache = types;
+      list.innerHTML = types.map(t => `
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-solid);">
+          <div>
+            <strong>${escapeHtml(t.name)}</strong>${t.is_default ? ' <span style="font-size:0.68rem; color:var(--muted);">(default)</span>' : ''}
+            <div style="font-size:0.74rem; color:var(--muted);">${t.permissions.length ? t.permissions.map(x => escapeHtml(PERM_SHORT[x] || x)).join(' · ') : 'users list only'}</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn btn-outline" data-at-edit="${t.id}" style="padding:3px 10px; font-size:0.72rem; width:auto;">Edit</button>
+            ${t.is_default ? '' : `<button type="button" class="btn btn-outline" data-at-delete="${t.id}" style="padding:3px 10px; font-size:0.72rem; width:auto; border-color:var(--danger); color:var(--danger);">Delete</button>`}
+          </div>
+        </div>`).join('') || '<div style="color:var(--muted); font-size:0.8rem;">No types yet.</div>';
+    }catch(e){
+      list.innerHTML = '<div style="color:var(--danger); font-size:0.8rem;">Could not load admin types: ' + escapeHtml(e.message || String(e)) + ' (run ADMIN_TYPES.sql first)</div>';
     }
   }
 
@@ -3469,26 +3648,28 @@
 
   window.openPermsDialog = async function(uid, uname){
     const old = document.getElementById('permDialogOverlay'); if(old) old.remove();
-    let current = [];
+    let types = [], current = null;
     try{
-      const { data } = await supabase.from('admin_permissions').select('permission').eq('user_id', uid);
-      current = (data || []).map(x => x.permission);
+      const [ty, ut] = await Promise.all([
+        supabase.from('admin_types').select('*'),
+        supabase.from('admin_user_types').select('type_id').eq('user_id', uid).maybeSingle()
+      ]);
+      types = (ty.data || []).slice().sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0) || a.name.localeCompare(b.name));
+      current = ut.data ? ut.data.type_id : null;
     }catch(e){}
+    const def = types.find(t => t.is_default);
+    const selId = current || (def ? def.id : '');
     const ov = document.createElement('div');
     ov.id = 'permDialogOverlay';
     ov.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px;';
     ov.innerHTML = `
-      <div style="background:var(--surface-2, #fff); color:var(--text); border:1px solid var(--border-solid); border-radius:12px; padding:20px; width:100%; max-width:440px;">
-        <h3 style="margin:0 0 4px;">Extra duties for @${escapeHtml(uname)}</h3>
-        <p style="font-size:0.78rem; color:var(--muted); margin:0 0 12px;">Every admin can see users, reply to support and send files. Tick extra duties to give this admin the Moderation tab, limited to what you choose.</p>
-        <label style="display:flex; gap:8px; align-items:flex-start; margin-bottom:10px; font-size:0.85rem;">
-          <input type="checkbox" id="permInspection" ${current.includes('inspection') ? 'checked' : ''} style="margin-top:3px;">
-          <span><strong>General inspection</strong><br><span style="color:var(--muted); font-size:0.78rem;">Review reported community messages and look up a person's community chat history.</span></span>
-        </label>
-        <label style="display:flex; gap:8px; align-items:flex-start; margin-bottom:14px; font-size:0.85rem;">
-          <input type="checkbox" id="permReports" ${current.includes('user_reports') ? 'checked' : ''} style="margin-top:3px;">
-          <span><strong>Reported users</strong><br><span style="color:var(--muted); font-size:0.78rem;">See users reported from direct chat and dismiss reports.</span></span>
-        </label>
+      <div style="background:var(--surface-2, #fff); color:var(--text); border:1px solid var(--border-solid); border-radius:12px; padding:20px; width:100%; max-width:460px; max-height:90vh; overflow:auto;">
+        <h3 style="margin:0 0 4px;">Admin type for @${escapeHtml(uname)}</h3>
+        <p style="font-size:0.78rem; color:var(--muted); margin:0 0 12px;">The type decides what this admin can see and do. Create new types in the "Admin types" box above the table.</p>
+        <select id="permTypeSelect" class="field" style="margin:0 0 10px;">
+          ${types.map(t => `<option value="${t.id}" ${t.id === selId ? 'selected' : ''}>${escapeHtml(t.name)}${t.is_default ? ' (default)' : ''}</option>`).join('')}
+        </select>
+        <div id="permTypePreview" style="font-size:0.78rem; color:var(--muted); margin-bottom:12px;"></div>
         <div id="permNotice" style="font-size:0.8rem; color:var(--danger); min-height:18px; margin-bottom:8px;"></div>
         <div style="display:flex; gap:8px; justify-content:flex-end;">
           <button type="button" class="btn btn-outline" id="permCancel" style="width:auto; padding:6px 16px;">Cancel</button>
@@ -3496,13 +3677,18 @@
         </div>
       </div>`;
     document.body.appendChild(ov);
+    const preview = () => {
+      const t = types.find(x => x.id === document.getElementById('permTypeSelect').value);
+      document.getElementById('permTypePreview').innerHTML = t && t.permissions.length
+        ? 'Can: ' + t.permissions.map(x => escapeHtml(PERM_SHORT[x] || x)).join(', ')
+        : 'Can only view the users list.';
+    };
+    document.getElementById('permTypeSelect').addEventListener('change', preview);
+    preview();
     document.getElementById('permCancel').onclick = () => ov.remove();
     document.getElementById('permSave').onclick = async () => {
-      const perms = [];
-      if(document.getElementById('permInspection').checked) perms.push('inspection');
-      if(document.getElementById('permReports').checked) perms.push('user_reports');
       try{
-        const { error } = await supabase.rpc('admin_set_permissions', { target_user_id: uid, perms });
+        const { error } = await supabase.rpc('admin_set_user_type', { target_user_id: uid, p_type_id: document.getElementById('permTypeSelect').value || null });
         if(error) throw error;
         ov.remove();
         loadAdminDashboard(true);
