@@ -1,261 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SAPKOTA DEFENSE // Security Operations Center</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg: #07090e; --card-bg: #0d121d; --card-border: #1a2638;
-      --accent: #00f2fe; --danger: #ff3366; --warning: #ffaa00; --success: #00ff88;
-      --text: #e2e8f0; --text-muted: #64748b; --font-mono: 'Courier New', Courier, monospace;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
-    header { background: rgba(13,18,29,0.95); border-bottom: 1px solid var(--card-border); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .badge-soc { background: rgba(255,51,102,0.15); color: var(--danger); border: 1px solid var(--danger); padding: 4px 10px; font-size: 11px; font-family: var(--font-mono); font-weight: bold; border-radius: 4px; letter-spacing: 1.5px; }
-    .brand h1 { font-size: 18px; letter-spacing: 0.5px; }
-    .admin-pill { font-family: var(--font-mono); font-size: 12px; color: var(--accent); background: rgba(0,242,254,0.1); border: 1px solid rgba(0,242,254,0.3); padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 8px; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .container { max-width: 1400px; margin: 0 auto; padding: 24px; width: 100%; flex: 1; }
-    .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 16px; margin-bottom: 24px; }
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; }
-    .stat-title { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-mono); margin-bottom: 8px; }
-    .stat-value { font-size: 32px; font-weight: 800; font-family: var(--font-mono); }
-    .stat-danger { color: var(--danger); } .stat-warning { color: var(--warning); } .stat-success { color: var(--success); } .stat-accent { color: var(--accent); }
-    .controls-bar { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .btn { background: var(--card-border); color: var(--text); border: 1px solid #2d3f58; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: var(--font-mono); font-size: 13px; transition: all 0.2s; }
-    .btn:hover { background: #223247; border-color: var(--accent); }
-    .btn-primary { background: rgba(0,242,254,0.15); border-color: var(--accent); color: var(--accent); }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    th { background: #090d15; padding: 12px 16px; font-family: var(--font-mono); color: var(--text-muted); border-bottom: 1px solid var(--card-border); font-weight: 600; text-transform: uppercase; font-size: 11px; }
-    td { padding: 14px 16px; border-bottom: 1px solid rgba(26,38,56,0.6); vertical-align: top; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
-    .badge-critical { background: rgba(255,51,102,0.2); color: #ff3366; border: 1px solid rgba(255,51,102,0.4); }
-    .badge-high { background: rgba(255,170,0,0.2); color: #ffaa00; border: 1px solid rgba(255,170,0,0.4); }
-    .badge-medium { background: rgba(0,242,254,0.15); color: #00f2fe; border: 1px solid rgba(0,242,254,0.3); }
-    .badge-blocked { background: rgba(0,255,136,0.15); color: #00ff88; border: 1px solid rgba(0,255,136,0.4); }
-    .payload-box { font-family: var(--font-mono); background: #06080d; border: 1px solid #1a2638; padding: 4px 8px; border-radius: 4px; color: #ff99aa; word-break: break-all; max-width: 450px; font-size: 11px; }
-    .access-denied-screen { display: none; position: fixed; inset: 0; background: #06080d; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
-    .access-denied-box { border: 1px solid var(--danger); background: rgba(255,51,102,0.05); padding: 40px; border-radius: 8px; max-width: 500px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/; style-src 'unsafe-inline'; img-src data:; connect-src https://hkwjnzohrzydmdyigwjr.supabase.co; base-uri 'none'; form-action 'none'">
+<title>Security Console</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" crossorigin="anonymous"></script>
+<style>
+  :root{--bg:#06080d;--card:#0d121d;--line:#1c2638;--text:#e6ecf5;--mut:#8593a8;--acc:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#ff3366;--mono:ui-monospace,Menlo,Consolas,monospace}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif;min-height:100vh}
+  .hide{display:none!important}
+  .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;width:100%;max-width:440px}
+  .box h2{margin:0 0 6px;font-family:var(--mono);font-size:18px}
+  .tag{font:11px var(--mono);color:var(--mut);letter-spacing:.08em;margin-bottom:10px}
+  input,textarea,select{width:100%;background:#080c14;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:11px;font:inherit;margin:8px 0}
+  input:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:-1px}
+  button{font:600 13px var(--mono);border-radius:8px;border:1px solid var(--line);background:#121a29;color:var(--text);padding:10px 14px;cursor:pointer}
+  button:hover{border-color:var(--acc)} button:disabled{opacity:.5;cursor:not-allowed}
+  button.pri{background:var(--acc);color:#04222a;border-color:var(--acc)}
+  button.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+  .err{color:var(--bad);font-size:13px;min-height:18px}
+  .ok{color:var(--ok)} .mut{color:var(--mut)}
+  header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);background:#0a0f19;position:sticky;top:0;z-index:5}
+  header b{font-family:var(--mono)}
+  nav{display:flex;gap:6px;flex-wrap:wrap;padding:12px 20px 0}
+  nav button.on{border-color:var(--acc);color:var(--acc)}
+  main{padding:16px 20px 60px;max-width:1100px;margin:0 auto}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:12px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card .k{font:11px var(--mono);color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+  .card .v{font:700 24px var(--mono);margin-top:4px}
+  .banner{padding:12px 16px;border-radius:10px;border:1px solid var(--line);margin:12px 0;font-family:var(--mono);font-size:13px}
+  .banner.off{border-color:#14532d;color:var(--ok)} .banner.readonly{border-color:#78350f;color:var(--warn)} .banner.lockdown{border-color:#7f1d1d;color:var(--bad)}
+  table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;word-break:break-word}
+  th{font:11px var(--mono);color:var(--mut);text-transform:uppercase}
+  .sev{font:700 11px var(--mono);padding:2px 8px;border-radius:99px;border:1px solid}
+  .CRITICAL,.HIGH{color:var(--bad)} .MEDIUM{color:var(--warn)} .LOW,.INFO{color:var(--acc)} .OK{color:var(--ok)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .scroll{overflow-x:auto}
+  h3{margin:22px 0 6px;font-family:var(--mono);font-size:15px}
+  @media(max-width:600px){main,header,nav{padding-left:12px;padding-right:12px}}
+</style>
 </head>
 <body>
 
-  <div id="deniedScreen" class="access-denied-screen">
-    <div class="access-denied-box">
-      <div class="badge-soc" style="margin-bottom: 16px;">SECURITY BARRIER</div>
-      <h2 style="color: var(--danger); margin-bottom: 12px; font-family: var(--font-mono);">ACCESS TERMINATED</h2>
-      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;" id="deniedMsg">
-        Only authorized Main Admin can access the Security Operations Console.
-      </p>
-      <button class="btn btn-primary" onclick="window.location.href='page0001.html'">Return to Login</button>
-      <button class="btn" style="margin-top:10px;" id="btnForceSignOut">Sign Out</button>
-    </div>
-  </div>
+<!-- DENIED -->
+<div id="sDenied" class="center hide"><div class="box" style="text-align:center">
+  <div class="tag">SECURITY BARRIER</div><h2 style="color:var(--bad)">ACCESS DENIED</h2>
+  <p id="deniedMsg" class="mut">Access denied.</p>
+  <button id="btnDeniedBack">Return to login</button>
+</div></div>
 
-  <header>
-    <div class="brand">
-      <div class="badge-soc">DEFENSE SYSTEM</div>
-      <h1>SAPKOTA THREAT MONITOR // SOC</h1>
-    </div>
-    <div class="admin-pill">
-      <span class="status-dot"></span>
-      <span id="adminDisplay">AUTHENTICATING...</span>
-    </div>
+<!-- GATE: two private questions (server-checked) -->
+<div id="sGate" class="center hide"><div class="box">
+  <div class="tag" id="gateStep">STEP 1 OF 2</div>
+  <h2 id="gateQ">Notes</h2>
+  <input id="gateIn" type="password" autocomplete="off" spellcheck="false" placeholder="Type here">
+  <div id="gateErr" class="err"></div>
+  <button class="pri" id="gateBtn" style="width:100%">CONTINUE</button>
+</div></div>
+
+<!-- AUTHENTICATOR -->
+<div id="sMfa" class="center hide"><div class="box">
+  <div class="tag">STEP 3 OF 3 · AUTHENTICATOR</div>
+  <h2 id="mfaTitle">Enter your 6-digit code</h2>
+  <p id="mfaHelp" class="mut" style="font-size:13px"></p>
+  <div id="mfaQr" style="text-align:center"></div>
+  <div id="mfaSecret" class="mut" style="font:12px var(--mono);word-break:break-all;margin:6px 0"></div>
+  <input id="mfaIn" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456">
+  <div id="mfaErr" class="err"></div>
+  <button class="pri" id="mfaBtn" style="width:100%">VERIFY</button>
+</div></div>
+
+<!-- APP -->
+<div id="sApp" class="hide">
+  <header><b>SECURITY CONSOLE</b>
+    <div class="row"><span id="idle" class="mut" style="font:12px var(--mono)"></span><button id="btnOut">Sign out</button></div>
   </header>
+  <nav id="tabs"></nav>
+  <main>
+    <div id="lockBanner" class="banner off">Site lock: OFF</div>
+    <section id="t-overview"></section>
+    <section id="t-emergency" class="hide"></section>
+    <section id="t-audit" class="hide"></section>
+    <section id="t-backup" class="hide"></section>
+    <section id="t-log" class="hide"></section>
+  </main>
+</div>
 
-  <div class="container">
-    <div class="grid-stats">
-      <div class="card"><div class="stat-title">Total Intercepts</div><div class="stat-value stat-accent" id="statTotal">0</div></div>
-      <div class="card"><div class="stat-title">Critical / SQLi Attacks</div><div class="stat-value stat-danger" id="statCritical">0</div></div>
-      <div class="card"><div class="stat-title">XSS Intercepted</div><div class="stat-value stat-warning" id="statXss">0</div></div>
-      <div class="card"><div class="stat-title">Brute Force / Bad Passwords</div><div class="stat-value stat-danger" id="statAuth">0</div></div>
-    </div>
+<script>
+(function () {
+  'use strict';
+  if (window.top !== window.self) { document.documentElement.innerHTML = ''; return; }
 
-    <div class="controls-bar">
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-primary" id="btnRefresh">↻ Refresh Threats</button>
-        <button class="btn" id="btnRlsAudit">🛡 Verify Database RLS</button>
-        <button class="btn" id="btnSignOutTop">⎋ Sign Out</button>
-      </div>
-      <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); align-self: center;" id="lastCheckedTime">Standby</div>
-    </div>
+  var SUPABASE_URL = 'https://hkwjnzohrzydmdyigwjr.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_EQoexcmNoJuos8Wla1Nykw_v5vwH1Qy';   // public key by design
+  var LOGIN_URL = '/page0001/';                                           // where "return to login" goes
+  var IDLE_MS = 10 * 60 * 1000;
 
-    <div class="card" style="padding:0; overflow-x:auto;">
-      <table>
-        <thead><tr><th>Time (UTC)</th><th>Type</th><th>Severity</th><th>Attacker IP</th><th>Target & Payload Sample</th><th>Action Taken</th></tr></thead>
-        <tbody id="eventsTableBody"><tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">Connecting to secure audit stream...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true } });
+  var $ = function (id) { return document.getElementById(id); };
 
-  <script>
-  if (!window.__SOC_BOOTED__) {
-    window.__SOC_BOOTED__ = true;
-
-    (function () {
-      var SUPABASE_URL = "https://hkwjnzohrzydmdyigwjr.supabase.co";
-      var SUPABASE_ANON_KEY = "sb_publishable_EQoexcmNoJuos8Wla1Nykw_v5vwH1Qy";
-      var MAIN_ADMIN = "pramodsapkota132@gmail.com";
-      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      var ready = false;
-
-      function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-      }
-
-      async function forceSignOut() {
-        try { await sb.auth.signOut(); } catch(e) {}
-        window.location.href = 'page0001.html';
-      }
-      document.getElementById('btnForceSignOut').onclick = forceSignOut;
-      document.getElementById('btnSignOutTop').onclick = forceSignOut;
-      document.getElementById('btnRefresh').onclick = fetchSecurityEvents;
-      document.getElementById('btnRlsAudit').onclick = runRlsAudit;
-
-      setTimeout(function () {
-        if (!ready) {
-          document.getElementById('deniedMsg').textContent = 'Loading timed out. Please sign in again.';
-          document.getElementById('deniedScreen').style.display = 'flex';
-        }
-      }, 5000);
-
-      function runSecretGate() {
-        return new Promise(function (resolve) {
-          var overlay = document.createElement("div");
-          overlay.style.cssText = "position:fixed;inset:0;background:#06080d;z-index:10000;display:flex;align-items:center;justify-content:center;";
-          overlay.innerHTML =
-            '<div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:32px;max-width:420px;width:90%;">' +
-            '<div id="gateStepLabel" style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:8px;">STEP 1 OF 2</div>' +
-            '<div id="gateQuestion" style="font-size:16px;margin-bottom:16px;">Notes</div>' +
-            '<input id="gateInput" type="text" placeholder="Add a quick note" autocomplete="off" style="width:100%;background:#090e17;border:1px solid var(--card-border);border-radius:6px;padding:10px 14px;color:var(--text);font-family:var(--font-mono);margin-bottom:14px;">' +
-            '<div id="gateError" style="color:var(--danger);font-size:12px;margin-bottom:10px;display:none;"></div>' +
-            '<button id="gateSubmit" style="width:100%;background:#ff3366;color:#fff;border:none;border-radius:6px;padding:12px;font-family:var(--font-mono);font-weight:700;cursor:pointer;">CONTINUE</button></div>';
-          document.body.appendChild(overlay);
-
-          var step = 1, noteAnswer = "";
-          var input = overlay.querySelector("#gateInput");
-          var submitBtn = overlay.querySelector("#gateSubmit");
-          var errorBox = overlay.querySelector("#gateError");
-          var questionLabel = overlay.querySelector("#gateQuestion");
-          var stepLabel = overlay.querySelector("#gateStepLabel");
-
-          async function submit() {
-            var val = input.value.trim();
-            if (!val) return;
-            if (step === 1) {
-              noteAnswer = val; step = 2;
-              stepLabel.textContent = "STEP 2 OF 2";
-              questionLabel.textContent = "Why did you build this site?";
-              input.value = ""; input.placeholder = "Your answer"; input.focus();
-              return;
-            }
-            submitBtn.disabled = true; submitBtn.textContent = "VERIFYING...";
-            try {
-              var res = await sb.rpc('verify_admin_secret_layer', { note_answer: noteAnswer, why_answer: val });
-              if (res.error) {
-                errorBox.textContent = res.error.message.indexOf("locked") > -1 ? "Too many failed attempts. Try again later." : "Verification failed.";
-                errorBox.style.display = "block"; submitBtn.disabled = false; submitBtn.textContent = "CONTINUE";
-                return;
-              }
-              if (res.data) { overlay.remove(); resolve(true); }
-              else {
-                errorBox.textContent = "Incorrect answer."; errorBox.style.display = "block";
-                step = 1; noteAnswer = "";
-                stepLabel.textContent = "STEP 1 OF 2"; questionLabel.textContent = "Notes";
-                input.value = ""; input.placeholder = "Add a quick note";
-                submitBtn.disabled = false; submitBtn.textContent = "CONTINUE";
-              }
-            } catch (err) {
-              errorBox.textContent = "Error: " + err.message; errorBox.style.display = "block";
-              submitBtn.disabled = false; submitBtn.textContent = "CONTINUE";
-            }
-          }
-          submitBtn.onclick = submit;
-          input.addEventListener("keydown", function(e){ if (e.key === "Enter") submit(); });
-        });
-      }
-
-      async function initConsole() {
-        try {
-          var sessionRes = await sb.auth.getSession();
-          var session = sessionRes.data.session;
-          if (!session || !session.user || session.user.email !== MAIN_ADMIN) {
-            ready = true;
-            document.getElementById("deniedScreen").style.display = "flex";
-            return;
-          }
-          ready = true; // signed in as owner: stop the load timer BEFORE waiting for the person to type the answers
-          var passedGate = await runSecretGate();
-          if (!passedGate) { ready = true; document.getElementById("deniedScreen").style.display = "flex"; return; }
-
-          ready = true;
-          document.getElementById("adminDisplay").textContent = "MAIN ADMIN: " + session.user.email;
-          await fetchSecurityEvents();
-        } catch (e) {
-          ready = true;
-          document.getElementById('deniedMsg').textContent = 'Error: ' + e.message;
-          document.getElementById("deniedScreen").style.display = "flex";
-        }
-      }
-
-      async function fetchSecurityEvents() {
-        var tbody = document.getElementById("eventsTableBody");
-        document.getElementById("lastCheckedTime").textContent = "Last updated: " + new Date().toLocaleTimeString();
-        var res = await sb.from('security_events').select('*').order('created_at', { ascending: false }).limit(100);
-        if (res.error) {
-          tbody.innerHTML = '<tr><td colspan="6" style="color:var(--danger); text-align:center; padding:24px;">Failed to load logs: ' + escapeHtml(res.error.message) + '</td></tr>';
-          return;
-        }
-        var data = res.data;
-        if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--success); padding:32px;">No attack incidents recorded yet. Defensive perimeters normal.</td></tr>';
-          updateStats([]);
-          return;
-        }
-        updateStats(data);
-        tbody.innerHTML = data.map(function (ev) {
-          var severityClass = ev.severity === 'CRITICAL' ? 'badge-critical' : ev.severity === 'HIGH' ? 'badge-high' : 'badge-medium';
-          return '<tr><td style="font-family:var(--font-mono); color:var(--text-muted);">' + new Date(ev.created_at).toLocaleTimeString() + '</td>' +
-            '<td><strong>' + escapeHtml(ev.event_type) + '</strong></td>' +
-            '<td><span class="badge ' + severityClass + '">' + escapeHtml(ev.severity) + '</span></td>' +
-            '<td style="font-family:var(--font-mono); color:var(--accent);">' + escapeHtml(ev.ip_address || 'Hidden/Proxy') + '</td>' +
-            '<td><div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">' + escapeHtml(ev.target_resource || '/') + '</div><div class="payload-box">' + escapeHtml(ev.payload_sample || 'No payload logged') + '</div></td>' +
-            '<td><span class="badge badge-blocked">LOGGED</span></td></tr>';
-        }).join('');
-      }
-
-      function updateStats(events) {
-        document.getElementById("statTotal").textContent = events.length;
-        document.getElementById("statCritical").textContent = events.filter(function(e){ return e.event_type === 'SQL_INJECTION' || e.severity === 'CRITICAL'; }).length;
-        document.getElementById("statXss").textContent = events.filter(function(e){ return e.event_type === 'XSS_ATTEMPT'; }).length;
-        document.getElementById("statAuth").textContent = events.filter(function(e){ return e.event_type === 'FAILED_LOGIN'; }).length;
-      }
-
-      async function runRlsAudit() {
-        alert("Running live RLS check against user_roles...");
-        try {
-          var unauth = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          var res = await unauth.from('user_roles').insert({ role: 'admin' });
-          if (res.error && res.error.code === '42501') {
-            alert("PERFECT: Anonymous insertion was BLOCKED by PostgreSQL RLS (Code 42501).");
-          } else {
-            alert("WARNING: Insertion did not trigger expected 42501 code. Check RLS policies!");
-          }
-        } catch (err) {
-          alert("Check completed: " + err.message);
-        }
-      }
-
-      initConsole();
-    })();
+  // ---- tiny safe DOM helper (never uses innerHTML) ----
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === 'class') el.className = attrs[k];
+      else if (k === 'text') el.textContent = attrs[k];
+      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), attrs[k]);
+      else el.setAttribute(k, attrs[k]);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null) continue;
+      el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
   }
-  </script>
+  function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+  function show(id) { ['sDenied', 'sGate', 'sMfa', 'sApp'].forEach(function (s) { $(s).classList.toggle('hide', s !== id); }); }
+  function deny(msg) { $('deniedMsg').textContent = msg || 'Access denied.'; show('sDenied'); }
+  function fmtBytes(n) { n = Number(n) || 0; var u = ['B', 'KB', 'MB', 'GB', 'TB'], i = 0; while (n >= 1024 && i < 4) { n /= 1024; i++; } return n.toFixed(i ? 1 : 0) + ' ' + u[i]; }
+  async function rpc(name, args) { var r = await sb.rpc(name, args || {}); if (r.error) throw new Error(r.error.message); return r.data; }
+  async function signOut() { try { await sb.auth.signOut(); } catch (e) {} location.href = LOGIN_URL; }
+  $('btnDeniedBack').onclick = function () { location.href = LOGIN_URL; };
+  $('btnOut').onclick = signOut;
+
+  // ---------- step 0: must already be signed in as the owner ----------
+  async function boot() {
+    try {
+      var s = await sb.auth.getSession();
+      if (!s.data.session) return deny('Sign in on the main site first, then open this page.');
+      var owner = await rpc('am_i_owner');                 // decided by the database, not by this page
+      if (owner !== true) return deny('Access denied.');
+      await gate();
+      await mfa();
+      startApp();
+    } catch (e) { deny('Error: ' + e.message); }
+  }
+
+  // ---------- step 1+2: two private questions, verified by the server ----------
+  function gate() {
+    return new Promise(function (resolve) {
+      var step = 1, first = '', fails = 0, lockedUntil = 0;
+      show('sGate'); $('gateIn').focus();
+      async function submit() {
+        var v = $('gateIn').value.trim(); if (!v) return;
+        if (Date.now() < lockedUntil) { $('gateErr').textContent = 'Wait ' + Math.ceil((lockedUntil - Date.now()) / 1000) + 's.'; return; }
+        if (step === 1) {
+          first = v; step = 2; $('gateStep').textContent = 'STEP 2 OF 3'; $('gateQ').textContent = 'Why did you build this site?';
+          $('gateIn').value = ''; $('gateErr').textContent = ''; $('gateIn').focus(); return;
+        }
+        $('gateBtn').disabled = true; $('gateBtn').textContent = 'VERIFYING...';
+        try {
+          var ok = await rpc('verify_admin_secret_layer', { note_answer: first, why_answer: v });
+          if (ok === true) { resolve(); return; }
+          throw new Error('wrong');
+        } catch (e) {
+          fails++; step = 1; first = '';
+          if (fails >= 3) { lockedUntil = Date.now() + 60000; fails = 0; }
+          $('gateErr').textContent = /locked/i.test(e.message) ? 'Too many attempts. Try later.' : 'Incorrect.';
+          $('gateStep').textContent = 'STEP 1 OF 3'; $('gateQ').textContent = 'Notes';
+        }
+        $('gateIn').value = ''; $('gateBtn').disabled = false; $('gateBtn').textContent = 'CONTINUE';
+      }
+      $('gateBtn').onclick = submit;
+      $('gateIn').onkeydown = function (e) { if (e.key === 'Enter') submit(); };
+    });
+  }
+
+  // ---------- step 3: authenticator app (TOTP) -> session becomes aal2 ----------
+  async function mfa() {
+    var lvl = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (lvl.data && lvl.data.currentLevel === 'aal2') return;
+    var fl = await sb.auth.mfa.listFactors();
+    if (fl.error) throw new Error(fl.error.message);
+    var verified = (fl.data.totp || [])[0];
+    show('sMfa');
+    return new Promise(function (resolve) {
+      var factorId = null, enrolling = false;
+      async function setup() {
+        // remove half-finished enrolments, then start a fresh one
+        var all = (fl.data.all || []).filter(function (f) { return f.status !== 'verified'; });
+        for (var i = 0; i < all.length; i++) { try { await sb.auth.mfa.unenroll({ factorId: all[i].id }); } catch (e) {} }
+        var en = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'owner-' + Date.now() });
+        if (en.error) { $('mfaErr').textContent = en.error.message; return; }
+        factorId = en.data.id; enrolling = true;
+        $('mfaTitle').textContent = 'Set up your authenticator';
+        $('mfaHelp').textContent = 'Scan this with Google Authenticator / Authy / 1Password, then type the 6-digit code it shows.';
+        var img = h('img', { src: en.data.totp.qr_code, alt: 'QR code', width: '190', height: '190', style: 'background:#fff;border-radius:8px;padding:6px' });
+        clear($('mfaQr')); $('mfaQr').appendChild(img);
+        $('mfaSecret').textContent = 'Or enter this key by hand: ' + en.data.totp.secret;
+      }
+      if (verified) { factorId = verified.id; $('mfaHelp').textContent = 'Open your authenticator app.'; }
+      else setup();
+      async function go() {
+        var code = $('mfaIn').value.replace(/\s/g, ''); if (!/^\d{6}$/.test(code)) { $('mfaErr').textContent = 'Enter the 6 digits.'; return; }
+        $('mfaBtn').disabled = true;
+        var r = await sb.auth.mfa.challengeAndVerify({ factorId: factorId, code: code });
+        $('mfaBtn').disabled = false;
+        if (r.error) { $('mfaErr').textContent = 'Wrong or expired code.'; $('mfaIn').value = ''; return; }
+        resolve();
+      }
+      $('mfaBtn').onclick = go;
+      $('mfaIn').onkeydown = function (e) { if (e.key === 'Enter') go(); };
+    });
+  }
+
+  // ---------- app ----------
+  var TABS = [['overview', 'Overview'], ['emergency', 'Emergency'], ['audit', 'Security audit'], ['backup', 'Backup'], ['log', 'Activity']];
+  var current = 'overview', idleTimer, idleAt;
+
+  function startApp() {
+    show('sApp');
+    var nav = $('tabs'); clear(nav);
+    TABS.forEach(function (t) {
+      nav.appendChild(h('button', { 'data-t': t[0], text: t[1], onclick: function () { openTab(t[0]); } }));
+    });
+    openTab('overview');
+    ['click', 'keydown', 'mousemove', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, resetIdle, { passive: true }); });
+    resetIdle();
+    setInterval(refreshLock, 30000);
+    setInterval(tickIdle, 1000);
+  }
+  function resetIdle() { idleAt = Date.now() + IDLE_MS; }
+  function tickIdle() {
+    var left = idleAt - Date.now();
+    if (left <= 0) { signOut(); return; }
+    $('idle').textContent = left < 120000 ? 'auto sign-out in ' + Math.ceil(left / 1000) + 's' : '';
+  }
+  function openTab(name) {
+    current = name;
+    Array.prototype.forEach.call($('tabs').children, function (b) { b.classList.toggle('on', b.getAttribute('data-t') === name); });
+    TABS.forEach(function (t) { $('t-' + t[0]).classList.toggle('hide', t[0] !== name); });
+    ({ overview: tabOverview, emergency: tabEmergency, audit: tabAudit, backup: tabBackup, log: tabLog })[name]();
+    refreshLock();
+  }
+  async function refreshLock() {
+    try {
+      var st = await rpc('site_status'); var lv = (st && st.level) || 'off';
+      var b = $('lockBanner'); b.className = 'banner ' + lv;
+      b.textContent = lv === 'off' ? 'Site lock: OFF — the site is running normally.'
+        : lv === 'readonly' ? 'Site lock: READ-ONLY — nobody except you can post or change anything.'
+        : 'LOCKDOWN — everyone except you is locked out.';
+    } catch (e) {}
+  }
+  function stat(k, v) { return h('div', { class: 'card' }, h('div', { class: 'k', text: k }), h('div', { class: 'v', text: String(v) })); }
+  function msg(el, text, cls) { el.textContent = text; el.className = cls || ''; }
+
+  // ----- Overview -----
+  async function tabOverview() {
+    var box = $('t-overview'); clear(box); box.appendChild(h('p', { class: 'mut', text: 'Loading…' }));
+    try {
+      var o = await rpc('owner_overview'); clear(box);
+      var g = h('div', { class: 'grid' },
+        stat('Accounts', o.users), stat('Database size', fmtBytes(o.db_bytes)), stat('File storage', fmtBytes(o.storage_bytes)),
+        stat('Chat messages', o.chat_messages == null ? '-' : o.chat_messages), stat('Community posts', o.community_messages == null ? '-' : o.community_messages),
+        stat('Support messages', o.support_messages == null ? '-' : o.support_messages));
+      box.appendChild(g);
+      box.appendChild(h('p', { class: 'mut', style: 'font-size:13px', text: 'Supabase free plan: about 500 MB database and 1 GB files. Use the Backup tab regularly.' }));
+    } catch (e) { clear(box); box.appendChild(h('p', { class: 'err', text: 'Could not load: ' + e.message + ' (did you run SECURE_CONSOLE.sql?)' })); }
+  }
+
+  // ----- Emergency -----
+  function tabEmergency() {
+    var box = $('t-emergency'); clear(box);
+    var note = h('input', { id: 'emMsg', placeholder: 'Message shown to visitors (optional)', maxlength: '300' });
+    var confirmIn = h('input', { id: 'emConfirm', placeholder: 'Type the level in capitals to confirm, e.g. LOCKDOWN', autocomplete: 'off' });
+    var out = h('div', { class: 'err' });
+    var level = 'lockdown';
+    var sel = h('select', { onchange: function () { level = sel.value; confirmIn.placeholder = level === 'off' ? 'Type OFF to confirm' : 'Type ' + level.toUpperCase() + ' to confirm'; } },
+      h('option', { value: 'lockdown', text: 'Lockdown — everyone except me is locked out' }),
+      h('option', { value: 'readonly', text: 'Read-only — nobody can post or change anything' }),
+      h('option', { value: 'off', text: 'Off — site works normally' }));
+    var apply = h('button', { class: 'bad', text: 'APPLY', onclick: async function () {
+      if (confirmIn.value.trim() !== level.toUpperCase()) return msg(out, 'Type ' + level.toUpperCase() + ' exactly to confirm.', 'err');
+      apply.disabled = true;
+      try { await ensureAal2(); await rpc('set_site_lock', { new_level: level, new_message: note.value }); msg(out, 'Done: ' + level, 'ok'); confirmIn.value = ''; refreshLock(); }
+      catch (e) { msg(out, e.message, 'err'); }
+      apply.disabled = false;
+    } });
+    var so = h('input', { placeholder: 'Type SIGNOUT to confirm', autocomplete: 'off' });
+    var soOut = h('div', { class: 'err' });
+    var soBtn = h('button', { class: 'bad', text: 'SIGN EVERYONE OUT', onclick: async function () {
+      if (so.value.trim() !== 'SIGNOUT') return msg(soOut, 'Type SIGNOUT exactly to confirm.', 'err');
+      soBtn.disabled = true;
+      try { await ensureAal2(); var n = await rpc('owner_sign_out_everyone'); msg(soOut, n + ' sessions ended. People already signed in must sign in again.', 'ok'); so.value = ''; }
+      catch (e) { msg(soOut, e.message, 'err'); }
+      soBtn.disabled = false;
+    } });
+    box.appendChild(h('h3', { text: 'Emergency lock' }));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:13px', text: 'Enforced inside the database, so it cannot be bypassed from the website. Only your account keeps working.' }));
+    box.appendChild(h('div', { class: 'card' }, sel, note, confirmIn, apply, out));
+    box.appendChild(h('h3', { text: 'Sign everyone out' }));
+    box.appendChild(h('div', { class: 'card' }, so, soBtn, soOut));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:12px', text: 'Locked yourself out? In the Supabase SQL editor run: update public.site_lock set level = \'off\' where id = 1;' }));
+  }
+  async function ensureAal2() {
+    var lvl = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (lvl.data && lvl.data.currentLevel === 'aal2') return;
+    throw new Error('Authenticator not confirmed. Reload this page and finish step 3.');
+  }
+
+  // ----- Security audit -----
+  function tabAudit() {
+    var box = $('t-audit'); clear(box);
+    var out = h('div'); var btn = h('button', { class: 'pri', text: 'Run security audit', onclick: run });
+    box.appendChild(h('h3', { text: 'Security audit' }));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:13px', text: 'Reads your real database settings (row-level security, open policies, public files, authenticator). It does not guess.' }));
+    box.appendChild(btn); box.appendChild(out);
+    async function run() {
+      btn.disabled = true; clear(out); out.appendChild(h('p', { class: 'mut', text: 'Checking…' }));
+      try {
+        var rows = await rpc('security_audit'); clear(out);
+        var order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, INFO: 4, OK: 5 };
+        rows.sort(function (a, b) { return (order[a.severity] || 9) - (order[b.severity] || 9); });
+        var bad = rows.filter(function (r) { return r.severity === 'CRITICAL' || r.severity === 'HIGH'; }).length;
+        out.appendChild(h('div', { class: 'banner ' + (bad ? 'lockdown' : 'off'), text: bad ? bad + ' serious issue(s) found' : 'No critical or high issues found' }));
+        var tb = h('tbody');
+        rows.forEach(function (r) { tb.appendChild(h('tr', null, h('td', null, h('span', { class: 'sev ' + r.severity, text: r.severity })), h('td', { text: r.check_name }), h('td', { class: 'mut', text: r.detail }))); });
+        out.appendChild(h('div', { class: 'scroll card', style: 'padding:0' }, h('table', null, h('thead', null, h('tr', null, h('th', { text: 'Level' }), h('th', { text: 'Check' }), h('th', { text: 'Detail' }))), tb)));
+      } catch (e) { clear(out); out.appendChild(h('p', { class: 'err', text: e.message })); }
+      btn.disabled = false;
+    }
+    run();
+  }
+
+  // ----- Backup (whole-site export, encrypted in the browser) -----
+  function b64(buf) { var s = '', a = new Uint8Array(buf); for (var i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); }
+  async function encrypt(text, pass) {
+    var enc = new TextEncoder(), salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+    var km = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+    var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 310000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+    var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(text));
+    return JSON.stringify({ v: 1, kdf: 'PBKDF2-SHA256-310000', cipher: 'AES-256-GCM', salt: b64(salt), iv: b64(iv), data: b64(ct) });
+  }
+  function download(name, text) {
+    var a = h('a', { href: URL.createObjectURL(new Blob([text], { type: 'application/json' })), download: name });
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function tabBackup() {
+    var box = $('t-backup'); clear(box);
+    var pass = h('input', { type: 'password', placeholder: 'Backup passphrase (min 12 characters)', autocomplete: 'new-password' });
+    var pass2 = h('input', { type: 'password', placeholder: 'Repeat passphrase', autocomplete: 'new-password' });
+    var out = h('div', { class: 'err' });
+    var btn = h('button', { class: 'pri', text: 'Download encrypted backup', onclick: async function () {
+      if (pass.value.length < 12) return msg(out, 'Use a passphrase of at least 12 characters.', 'err');
+      if (pass.value !== pass2.value) return msg(out, 'Passphrases do not match.', 'err');
+      btn.disabled = true; msg(out, 'Exporting…', 'mut');
+      try {
+        await ensureAal2();
+        var data = await rpc('owner_backup');
+        var text = await encrypt(JSON.stringify(data), pass.value);
+        var d = new Date().toISOString().slice(0, 10);
+        download('sapkotap-backup-' + d + '.json.enc', text);
+        msg(out, 'Saved. Store it somewhere safe, and keep the passphrase separate from the file. Lose the passphrase and the backup cannot be opened.', 'ok');
+        pass.value = ''; pass2.value = '';
+      } catch (e) { msg(out, e.message, 'err'); }
+      btn.disabled = false;
+    } });
+    box.appendChild(h('h3', { text: 'Whole-site backup' }));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:13px', text: 'Exports every table (profiles, messages, reports, admin types, moderation history, settings) plus the account list without passwords. It is encrypted here in your browser before it is saved, so nobody can read it without your passphrase.' }));
+    box.appendChild(h('div', { class: 'card' }, pass, pass2, btn, out));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:12px', text: 'Uploaded files (images, voice) are not in this export. Use the daily GitHub backup job for those, and keep one copy off Supabase.' }));
+  }
+
+  // ----- Activity log -----
+  async function tabLog() {
+    var box = $('t-log'); clear(box); box.appendChild(h('h3', { text: 'Emergency-lock activity' }));
+    try {
+      var r = await sb.from('site_lock_log').select('*').order('created_at', { ascending: false }).limit(100);
+      if (r.error) throw new Error(r.error.message);
+      var tb = h('tbody');
+      (r.data || []).forEach(function (x) { tb.appendChild(h('tr', null, h('td', { text: new Date(x.created_at).toLocaleString() }), h('td', { text: x.level }), h('td', { class: 'mut', text: x.message || '' }))); });
+      if (!(r.data || []).length) tb.appendChild(h('tr', null, h('td', { colspan: '3', class: 'mut', text: 'Nothing yet.' })));
+      box.appendChild(h('div', { class: 'scroll card', style: 'padding:0' }, h('table', null, h('thead', null, h('tr', null, h('th', { text: 'Time' }), h('th', { text: 'Action' }), h('th', { text: 'Message' }))), tb)));
+    } catch (e) { box.appendChild(h('p', { class: 'err', text: e.message })); }
+  }
+
+  boot();
+})();
+</script>
 </body>
 </html>
