@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="robots" content="noindex, nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In / Register — Pramod Sapkota</title>
 <meta name="description" content="Login and registration for sapkotap.com.np">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="icon" type="image/jpeg" href="favicon.png">
+<link rel="icon" type="image/jpeg" href="favicon.jpg">
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 
@@ -877,10 +878,10 @@
           <div id="adminAddUserCard" style="background:var(--surface-2); border:1px solid var(--border-solid); border-radius:10px; padding:16px;">
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--violet);">Add New User (Admin Provisioning)</h4>
             <form id="adminAddUserForm" style="display:flex; flex-direction:column; gap:8px;">
-              <input type="text" id="adminNewFullName" class="field" style="margin:0;" placeholder="Full Name" required>
-              <input type="text" id="adminNewUsername" class="field" style="margin:0;" placeholder="Username (unique)" required>
-              <input type="email" id="adminNewEmail" class="field" style="margin:0;" placeholder="User Email" required>
-              <input type="password" id="adminNewPassword" class="field" style="margin:0;" placeholder="Initial Password (min 6 chars)" minlength="6" required>
+              <input type="text" id="adminNewFullName" autocomplete="off" class="field" style="margin:0;" placeholder="Full Name" required>
+              <input type="text" id="adminNewUsername" autocomplete="off" class="field" style="margin:0;" placeholder="Username (unique)" required>
+              <input type="email" id="adminNewEmail" autocomplete="off" class="field" style="margin:0;" placeholder="User Email" required>
+              <input type="password" id="adminNewPassword" autocomplete="new-password" class="field" style="margin:0;" placeholder="Initial Password (min 6 chars)" minlength="6" required>
               <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
                 <button type="submit" class="btn" style="padding:6px 14px; font-size:0.85rem; width:auto;">Create User</button>
                 <span id="adminAddUserNotice" style="font-size:0.8rem;"></span>
@@ -1044,7 +1045,7 @@
     </div>
   </div>
 
-  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud</footer>
+  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-14-a</span></footer>
 
 <script>
 (function(){
@@ -2080,10 +2081,11 @@
     }
   }
 
-  async function loadAdminTypes(){
+  // Buttons are wired up as soon as the page loads, not after the admin data arrives.
+  function bindAdminTypesUI(){
     const list = document.getElementById('adminTypesList');
     const permBox = document.getElementById('atPerms');
-    if(!list || !permBox || !supabase) return;
+    if(!list || !permBox) return;
     if(!permBox.dataset.built){
       permBox.dataset.built = '1';
       permBox.innerHTML = Object.keys(PERM_LABELS).map(k => `<label style="display:flex; gap:8px; align-items:flex-start; font-size:0.82rem;"><input type="checkbox" data-atperm="${k}" style="margin-top:3px;"><span>${escapeHtml(PERM_LABELS[k])}</span></label>`).join('');
@@ -2095,7 +2097,12 @@
         permBox.querySelectorAll('[data-atperm]').forEach(c => c.checked = false);
         notice.textContent = '';
       };
-      document.getElementById('atReset').addEventListener('click', reset);
+      document.getElementById('atReset').addEventListener('click', () => {
+        reset();
+        notice.style.color = 'var(--muted)';
+        notice.textContent = 'New type: type a name, tick what it can do, then press Save type.';
+        document.getElementById('atName').focus();
+      });
       document.getElementById('atSave').addEventListener('click', async () => {
         const name = document.getElementById('atName').value.trim();
         const perms = [...permBox.querySelectorAll('[data-atperm]')].filter(c => c.checked).map(c => c.getAttribute('data-atperm'));
@@ -2126,6 +2133,12 @@
         }
       });
     }
+  }
+  bindAdminTypesUI();
+
+  async function loadAdminTypes(){
+    const list = document.getElementById('adminTypesList');
+    if(!list || !supabase) return;
     try{
       const { data, error } = await supabase.from('admin_types').select('*');
       if(error) throw error;
