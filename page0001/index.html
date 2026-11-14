@@ -1045,7 +1045,7 @@
     </div>
   </div>
 
-  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-14-b</span></footer>
+  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-14-a</span></footer>
 
 <script>
 (function(){
@@ -3143,7 +3143,7 @@
   }
 
   window.deleteMyChatMessage = async function(id){
-    if(!confirm('Are you sure you want to delete this message?')) return;
+    if(!confirm('Delete this message for both of you? (The site owner can still review it for safety.)')) return;
     try{
       const { error } = await supabase.rpc('soft_delete_direct_message', { p_id: String(id) });
       if(error) throw error;
