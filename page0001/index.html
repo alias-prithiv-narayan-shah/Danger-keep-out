@@ -658,6 +658,7 @@
       <button type="button" class="btn-subtle" id="tabBtnCommunity" style="padding:6px 14px; font-size:0.85rem; cursor:pointer; background:transparent; border:1px solid var(--border-solid); color:var(--muted); border-radius:6px;">Community</button>
       <button type="button" class="btn-subtle" id="tabBtnSupport" style="padding:6px 14px; font-size:0.85rem; cursor:pointer; background:transparent; border:1px solid var(--border-solid); color:var(--muted); border-radius:6px;">Message Admin</button>
       <button type="button" class="btn-subtle" id="tabBtnSecurity" style="padding:6px 14px; font-size:0.85rem; cursor:pointer; background:transparent; border:1px solid var(--border-solid); color:var(--muted); border-radius:6px;">Security</button>
+      <button type="button" class="btn-subtle" id="tabBtnSettings" style="padding:6px 14px; font-size:0.85rem; cursor:pointer; background:transparent; border:1px solid var(--border-solid); color:var(--muted); border-radius:6px;">Settings</button>
       <button type="button" class="btn-subtle" id="tabBtnAdmin" style="display:none; padding:6px 14px; font-size:0.85rem; cursor:pointer; background:transparent; border:1px solid var(--violet); color:var(--violet); border-radius:6px;">Admin Console</button>
     </div>
 
@@ -825,6 +826,8 @@
     </div>
 
     <!-- ADMIN PANEL: "Control room" -->
+    <div id="tabContentSettings" style="display:none; margin-top:20px;"></div>
+
     <div id="adminArea" style="display:none; margin-top:36px; border-top:1px solid var(--border-solid); padding-top:24px;">
 
       <div class="react-topbar" style="border-bottom:none; margin-bottom:12px; padding-bottom:0;">
@@ -1047,7 +1050,7 @@
     </div>
   </div>
 
-  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-15-e</span></footer>
+  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-15-e1</span></footer>
 
 <script>
 (function(){
@@ -1115,8 +1118,8 @@
     try{
       const chosen = await askNameDialog({
         title: 'Choose your anonymous name',
-        help: 'Everyone chats under an anonymous name, so nobody sees your real name or username. 3-24 letters, numbers or spaces. It cannot be your name, username or email, and it must not already be taken.',
-        placeholder: 'e.g. BlueFox', rpc: 'set_my_nickname', param: 'p_nick', max: 24, button: 'Save and continue'
+        help: 'Everyone chats under an anonymous name, so nobody sees your real name or username. 3-60 letters, numbers or spaces. It cannot be your name, username or email, and it must not already be taken.',
+        placeholder: 'e.g. BlueFox', rpc: 'set_my_nickname', param: 'p_nick', max: 60, button: 'Save and continue'
       });
       const ni = document.getElementById('communityNameInput'); if(ni) ni.value = chosen;
       const ci = document.getElementById('chatNicknameInput'); if(ci) ci.value = chosen;
@@ -2556,7 +2559,8 @@
 
   function switchDashboardTab(tabName){
     if(tabName === 'Chat' || tabName === 'Community') ensureNickname();
-    const tabs = ['Files', 'Chat', 'Community', 'Support', 'Security', 'Admin'];
+    if(tabName === 'Settings') loadSettings();
+    const tabs = ['Files', 'Chat', 'Community', 'Support', 'Security', 'Settings', 'Admin'];
     tabs.forEach(t => {
       const btn = document.getElementById('tabBtn' + t);
       const content = document.getElementById(t === 'Admin' ? 'adminArea' : 'tabContent' + t);
@@ -2614,6 +2618,7 @@
   document.getElementById('tabBtnCommunity')?.addEventListener('click', () => switchDashboardTab('Community'));
   document.getElementById('tabBtnSupport')?.addEventListener('click', () => switchDashboardTab('Support'));
   document.getElementById('tabBtnSecurity')?.addEventListener('click', () => switchDashboardTab('Security'));
+  document.getElementById('tabBtnSettings')?.addEventListener('click', () => switchDashboardTab('Settings'));
   document.getElementById('tabBtnAdmin')?.addEventListener('click', () => switchDashboardTab('Admin'));
 
   /* --- SUPPORT INQUIRIES (USER & ADMIN) --- */
@@ -2985,7 +2990,7 @@
     const input = document.getElementById('chatNicknameInput');
     const notice = document.getElementById('nicknameNotice');
     if(!input || !supabase || !sessionUser) return;
-    const val = input.value.trim().slice(0, 40);
+    const val = input.value.trim().slice(0, 60);
     try{
       if(!val){ notice.textContent = 'Your anonymous name is required.'; notice.style.color = 'var(--danger)'; return; }
       const { error } = await supabase.rpc('set_my_nickname', { p_nick: val });
@@ -3218,33 +3223,116 @@
   }
 
 
-  /* --- Delete my own account (Security tab) --- */
-  (function(){
-    const tab = document.getElementById('tabContentSecurity');
-    if(!tab) return;
-    const card = document.createElement('div');
-    card.style.cssText = 'margin-top:26px;border:1px solid var(--danger);border-radius:10px;padding:16px;';
-    const t = document.createElement('div'); t.textContent = 'Delete my account'; t.style.cssText = 'font-weight:700;color:var(--danger);margin-bottom:6px;';
-    const d = document.createElement('p'); d.style.cssText = 'font-size:.8rem;color:var(--muted);margin:0 0 10px;';
-    d.textContent = 'This permanently removes your account and sign-in. It cannot be undone. Type DELETE MY ACCOUNT to confirm.';
-    const inp = document.createElement('input'); inp.type = 'text'; inp.autocomplete = 'off'; inp.placeholder = 'DELETE MY ACCOUNT';
-    inp.style.cssText = 'width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-solid);background:var(--surface-2);color:var(--text);margin-bottom:8px;';
-    const out = document.createElement('div'); out.style.cssText = 'font-size:.8rem;min-height:16px;margin-bottom:6px;';
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = 'Delete my account';
-    b.style.cssText = 'background:var(--danger);border-color:var(--danger);color:#fff;width:auto;';
+  /* --- SETTINGS TAB: name, anonymous name, account info, delete account --- */
+  let settingsBuilt = false;
+  const SET_INPUT = 'width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-solid);background:var(--surface);color:var(--text);';
+  function setCard(title, desc){
+    const c = document.createElement('div');
+    c.style.cssText = 'background:var(--surface-2);border:1px solid var(--border-solid);border-radius:10px;padding:16px;margin-bottom:16px;';
+    const t = document.createElement('div'); t.textContent = title; t.style.cssText = 'font-weight:700;margin-bottom:4px;'; c.appendChild(t);
+    if(desc){ const d = document.createElement('p'); d.textContent = desc; d.style.cssText = 'font-size:.8rem;color:var(--muted);margin:0 0 10px;'; c.appendChild(d); }
+    return c;
+  }
+  function setRow(card, label, id, maxlen, btnText, onSave){
+    const l = document.createElement('label'); l.textContent = label; l.style.cssText = 'display:block;font-size:.75rem;color:var(--muted);margin:8px 0 4px;';
+    const i = document.createElement('input'); i.type = 'text'; i.id = id; i.maxLength = maxlen; i.autocomplete = 'off'; i.style.cssText = SET_INPUT;
+    const m = document.createElement('div'); m.style.cssText = 'font-size:.8rem;min-height:16px;margin:6px 0;';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = btnText; b.style.width = 'auto';
     b.addEventListener('click', async function(){
-      if(inp.value.trim() !== 'DELETE MY ACCOUNT'){ out.style.color = 'var(--danger)'; out.textContent = 'Type DELETE MY ACCOUNT exactly.'; return; }
+      const v = i.value.trim();
+      if(!v){ m.style.color = 'var(--danger)'; m.textContent = 'This cannot be empty.'; return; }
+      b.disabled = true; m.style.color = 'var(--muted)'; m.textContent = 'Saving…';
+      try{ await onSave(v); m.style.color = 'var(--good)'; m.textContent = 'Saved.'; }
+      catch(err){ m.style.color = 'var(--danger)'; m.textContent = err.message || String(err); }
+      b.disabled = false;
+    });
+    i.addEventListener('keydown', function(e){ if(e.key === 'Enter') b.click(); });
+    card.appendChild(l); card.appendChild(i); card.appendChild(m); card.appendChild(b);
+  }
+  async function rpcOrThrow(name, args){ const { error } = await supabase.rpc(name, args); if(error) throw error; }
+
+  function buildSettingsTab(){
+    const root = document.getElementById('tabContentSettings');
+    if(!root || settingsBuilt) return;
+    settingsBuilt = true;
+    const h = document.createElement('h3'); h.textContent = 'Settings';
+    h.style.cssText = "font-family:'Space Grotesk',sans-serif;color:var(--cyan);margin-bottom:12px;";
+    root.appendChild(h);
+
+    const prof = setCard('Your name and username', 'Your real name and username are private to you and the site admins. Other people only ever see your anonymous name.');
+    setRow(prof, 'Full name', 'setFullName', 60, 'Save name', v => rpcOrThrow('set_my_full_name', { p_name: v }));
+    setRow(prof, 'Username (3-20 letters, numbers, underscore; must be unique)', 'setUsername', 20, 'Save username', v => rpcOrThrow('set_my_username', { p_username: v }));
+    root.appendChild(prof);
+
+    const anon = setCard('Anonymous name', 'This is the name everyone sees in chat and the community room. Up to 60 characters. It cannot be your real name, username or email, and it must not be taken.');
+    setRow(anon, 'Anonymous name', 'setNick', 60, 'Save anonymous name', async v => {
+      await rpcOrThrow('set_my_nickname', { p_nick: v });
+      const ni = document.getElementById('communityNameInput'); if(ni) ni.value = v;
+      const ci = document.getElementById('chatNicknameInput'); if(ci) ci.value = v;
+      try{ loadAcceptedContacts(); }catch(e){}
+    });
+    root.appendChild(anon);
+
+    const acct = setCard('Account', 'How you sign in on this device.');
+    const info = document.createElement('div'); info.id = 'setAccountInfo'; info.style.cssText = 'font-size:.85rem;line-height:1.7;margin-bottom:10px;';
+    acct.appendChild(info);
+    const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+    function mk(txt, fn){ const b = document.createElement('button'); b.type = 'button'; b.className = 'btn-outline'; b.textContent = txt; b.style.cssText = 'width:auto;padding:8px 14px;'; b.addEventListener('click', fn); row.appendChild(b); }
+    mk('Sign out', async () => { try{ await supabase.auth.signOut(); }catch(e){} window.location.reload(); });
+    mk('Sign out of all devices', async () => {
+      if(!confirm('Sign out of every device where you are logged in?')) return;
+      try{ await supabase.auth.signOut({ scope: 'global' }); }catch(e){}
+      window.location.reload();
+    });
+    acct.appendChild(row);
+    root.appendChild(acct);
+
+    const del = setCard('Delete my account', 'This permanently removes your account and sign-in. It cannot be undone. Type DELETE MY ACCOUNT to confirm.');
+    del.style.borderColor = 'var(--danger)'; del.firstChild.style.color = 'var(--danger)';
+    const di = document.createElement('input'); di.type = 'text'; di.autocomplete = 'off'; di.placeholder = 'DELETE MY ACCOUNT'; di.style.cssText = SET_INPUT + 'margin-bottom:8px;';
+    const dm = document.createElement('div'); dm.style.cssText = 'font-size:.8rem;min-height:16px;margin-bottom:6px;';
+    const db = document.createElement('button'); db.type = 'button'; db.className = 'btn'; db.textContent = 'Delete my account';
+    db.style.cssText = 'background:var(--danger);border-color:var(--danger);color:#fff;width:auto;';
+    db.addEventListener('click', async function(){
+      if(di.value.trim() !== 'DELETE MY ACCOUNT'){ dm.style.color = 'var(--danger)'; dm.textContent = 'Type DELETE MY ACCOUNT exactly.'; return; }
       if(!confirm('Delete your account for good? This cannot be undone.')) return;
-      b.disabled = true;
+      db.disabled = true;
       const { error } = await supabase.rpc('delete_my_account');
-      if(error){ b.disabled = false; out.style.color = 'var(--danger)'; out.textContent = error.message; return; }
+      if(error){ db.disabled = false; dm.style.color = 'var(--danger)'; dm.textContent = error.message; return; }
       try{ await supabase.auth.signOut(); }catch(e){}
       alert('Your account has been deleted.');
       window.location.reload();
     });
-    card.appendChild(t); card.appendChild(d); card.appendChild(inp); card.appendChild(out); card.appendChild(b);
-    tab.appendChild(card);
-  })();
+    del.appendChild(di); del.appendChild(dm); del.appendChild(db);
+    root.appendChild(del);
+  }
+
+  async function loadSettings(){
+    buildSettingsTab();
+    if(!supabase || !sessionUser) return;
+    try{
+      const { data } = await supabase.from('profiles').select('full_name, username, chat_nickname').eq('id', sessionUser.id).maybeSingle();
+      const set = (id, v) => { const el = document.getElementById(id); if(el) el.value = v || ''; };
+      set('setFullName', data && data.full_name); set('setUsername', data && data.username); set('setNick', data && data.chat_nickname);
+    }catch(e){}
+    const info = document.getElementById('setAccountInfo');
+    if(info){
+      const prov = (sessionUser.app_metadata && sessionUser.app_metadata.provider) || 'email';
+      const lines = [
+        ['Email', sessionUser.email || ''],
+        ['Sign-in method', prov === 'google' ? 'Google' : prov === 'azure' ? 'Outlook / Microsoft' : 'Email and password'],
+        ['Member since', sessionUser.created_at ? new Date(sessionUser.created_at).toLocaleDateString() : ''],
+        ['Last sign-in', sessionUser.last_sign_in_at ? new Date(sessionUser.last_sign_in_at).toLocaleString() : '']
+      ];
+      while(info.firstChild) info.removeChild(info.firstChild);
+      lines.forEach(function(r){
+        const d = document.createElement('div');
+        const k = document.createElement('span'); k.textContent = r[0] + ': '; k.style.color = 'var(--muted)';
+        const v = document.createElement('strong'); v.textContent = r[1];
+        d.appendChild(k); d.appendChild(v); info.appendChild(d);
+      });
+    }
+  }
 
   window.deleteMyChatMessage = async function(id){
     if(!confirm('Are you sure you want to delete this message?')) return;
@@ -3627,7 +3715,7 @@
     }
 
     if(!(nameInput?.value || '').trim()){ await ensureNickname(); return; }
-    const displayName = (nameInput?.value || '').trim().slice(0, 40);
+    const displayName = (nameInput?.value || '').trim().slice(0, 60);
     input.value = "";
 
     try{
