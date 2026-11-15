@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>if(window.top!==window.self){try{window.top.location=window.self.location;}catch(e){document.documentElement.style.display="none";}}</script>
   <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://hkwjnzohrzydmdyigwjr.supabase.co; media-src 'self' blob: https://hkwjnzohrzydmdyigwjr.supabase.co; connect-src 'self' https://hkwjnzohrzydmdyigwjr.supabase.co wss://hkwjnzohrzydmdyigwjr.supabase.co https://ipapi.co https://api.ipify.org; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In / Register — Pramod Sapkota</title>
@@ -1045,7 +1047,7 @@
     </div>
   </div>
 
-  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-14-a</span></footer>
+  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-15-c</span></footer>
 
 <script>
 (function(){
@@ -2840,7 +2842,7 @@
           <td>${escapeHtml(m.user_email || 'Anonymous')}</td>
           <td><strong>${escapeHtml(m.subject)}</strong></td>
           <td style="max-width:220px; word-break:break-word;">${escapeHtml(m.message)}</td>
-          <td><span style="padding:2px 6px; border-radius:4px; font-size:0.7rem; color:${m.status==='resolved'?'var(--good)':'#eab308'};">${m.status}</span></td>
+          <td><span style="padding:2px 6px; border-radius:4px; font-size:0.7rem; color:${m.status==='resolved'?'var(--good)':'#eab308'};">${escapeHtml(m.status)}</span></td>
           <td style="min-width:220px;">
             ${m.admin_reply ? `
               <div style="font-size:0.75rem; color:var(--violet); font-weight:700; margin-bottom:4px;">Replied:</div>
@@ -3143,7 +3145,7 @@
   }
 
   window.deleteMyChatMessage = async function(id){
-    if(!confirm('Delete this message for both of you? (The site owner can still review it for safety.)')) return;
+    if(!confirm('Are you sure you want to delete this message?')) return;
     try{
       const { error } = await supabase.rpc('soft_delete_direct_message', { p_id: String(id) });
       if(error) throw error;
@@ -3202,7 +3204,7 @@
         if(m.message_type === 'image' && m.attachment_path){
           const { data: signed } = await getChatSigned(m.attachment_path);
           inner = signed
-            ? `<img src="${signed.signedUrl}" loading="lazy" decoding="async" onclick="window.open(this.src,'_blank')" style="width:auto; height:auto; max-width:220px; max-height:220px; object-fit:contain; border-radius:8px; display:block; cursor:zoom-in;">`
+            ? `<img src="${signed.signedUrl}" loading="lazy" decoding="async" onclick="window.open(this.src,'_blank','noopener')" style="width:auto; height:auto; max-width:220px; max-height:220px; object-fit:contain; border-radius:8px; display:block; cursor:zoom-in;">`
             : `<span>[image unavailable]</span>`;
         } else if(m.message_type === 'audio' && m.attachment_path){
           const { data: signed } = await getChatSigned(m.attachment_path);
@@ -3616,13 +3618,28 @@
         .or(`sender_id.eq.${targetId},receiver_id.eq.${targetId}`)
         .order('created_at', { ascending: false })
         .limit(200);
-      (dm || []).forEach(m => entries.push({
-        when: m.created_at,
-        source: (m.sender_id === targetId ? 'Direct (sent)' : 'Direct (received)') + (m.deleted_at ? ' — DELETED by sender ' + new Date(m.deleted_at).toLocaleString() : ''),
-        color: 'var(--violet)',
-        text: m.message_type && m.message_type !== 'text' ? `[${m.message_type} attachment: ${m.attachment_name || ''}]` : m.message,
-        extra: ''
-      }));
+      const dmRows = dm || [];
+      for(const m of dmRows){
+        let html = '';
+        if(m.attachment_path && m.message_type && m.message_type !== 'text'){
+          try{
+            const { data: sg } = await getChatSigned(m.attachment_path, m.message_type === 'file' ? (m.attachment_name || 'file') : undefined);
+            const u = sg && sg.signedUrl ? escapeHtml(sg.signedUrl) : '';
+            if(!u) html = '<span style="color:var(--muted);">[' + escapeHtml(m.message_type) + ' not available]</span>';
+            else if(m.message_type === 'image') html = '<img src="' + u + '" loading="lazy" alt="image" onclick="window.open(this.src,\'_blank\',\'noopener\')" style="max-width:240px; max-height:240px; border-radius:8px; cursor:pointer; display:block;">';
+            else if(m.message_type === 'audio') html = '<audio controls preload="none" src="' + u + '" style="max-width:260px; height:34px;"></audio>';
+            else html = '<a href="' + u + '" target="_blank" rel="noopener" style="color:var(--cyan);">Open file: ' + escapeHtml(m.attachment_name || 'file') + '</a>';
+          }catch(_){ html = '<span style="color:var(--muted);">[attachment could not be loaded]</span>'; }
+        }
+        entries.push({
+          when: m.created_at,
+          source: (m.sender_id === targetId ? 'Direct (sent)' : 'Direct (received)') + (m.deleted_at ? ' — DELETED by sender ' + new Date(m.deleted_at).toLocaleString() : ''),
+          color: 'var(--violet)',
+          text: m.message_type && m.message_type !== 'text' ? '' : m.message,
+          html: html,
+          extra: ''
+        });
+      }
     }catch(e){}
 
     // Their own support tickets, for context
@@ -3651,7 +3668,7 @@
             <span style="font-size:0.72rem; font-weight:700; color:${e.color};">${escapeHtml(e.source)}</span>
             <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap;">${new Date(e.when).toLocaleString()}</span>
           </div>
-          <div style="color:var(--text); white-space:pre-wrap;">${escapeHtml(e.text || '')}</div>
+          ${e.html ? `<div style="margin-top:2px;">${e.html}</div>` : `<div style="color:var(--text); white-space:pre-wrap;">${escapeHtml(e.text || '')}</div>`}
           ${e.extra ? `<div style="font-size:0.7rem; color:var(--muted); margin-top:4px;">${escapeHtml(e.extra)}</div>` : ''}
         </div>
       `).join('') + `</div>`;
