@@ -1047,7 +1047,7 @@
     </div>
   </div>
 
-  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-15-c</span></footer>
+  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-15-d</span></footer>
 
 <script>
 (function(){
@@ -3151,7 +3151,10 @@
       if(error) throw error;
       lastChatSig = '';
       loadActiveConversation(activeChatContactId, activeChatContactName, false);
-    }catch(err){ alert('Could not delete: ' + (err.message || err)); }
+    }catch(err){
+      if(/already deleted/i.test(String(err.message || err))){ lastChatSig = ''; loadActiveConversation(activeChatContactId, activeChatContactName, false); return; }
+      alert('Could not delete: ' + (err.message || err));
+    }
   };
 
   window.reportChatUser = async function(){
@@ -3175,13 +3178,16 @@
     if(!box || !supabase || !sessionUser) return;
 
     try {
-      const { data: msgs, error } = await supabase
+      const { data: allMsgs, error } = await supabase
         .from('chat_messages')
         .select('*')
         .or(`and(sender_id.eq.${sessionUser.id},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${sessionUser.id})`)
         .order('created_at', { ascending: true });
 
       if(error) throw error;
+      // The owner's account is allowed to read deleted messages (for safety review), but the chat screen
+      // must still hide them, otherwise a deleted message looks like it was never deleted.
+      const msgs = (allMsgs || []).filter(m => !m.deleted_at);
       if(!msgs || msgs.length === 0){
         box.innerHTML = `<div style="color:var(--muted); font-size:0.8rem; text-align:center; margin-top:40px;">No messages yet. Say hi to @${escapeHtml(username)}!</div>`;
         return;
