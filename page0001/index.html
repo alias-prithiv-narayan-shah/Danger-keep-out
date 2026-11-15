@@ -677,7 +677,7 @@
       <!-- Anonymous nickname -->
       <div style="background:var(--surface-2); border:1px solid var(--border-solid); border-radius:8px; padding:10px 12px; margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <span style="font-size:0.78rem; color:var(--muted); white-space:nowrap;">Chat as:</span>
-        <input type="text" id="chatNicknameInput" placeholder="Anonymous nickname (optional)" style="flex:1; min-width:160px; padding:7px 10px; border-radius:7px; background:var(--bg); border:1px solid var(--border-solid); color:var(--text); font-size:0.82rem;">
+        <input type="text" id="chatNicknameInput" placeholder="Your anonymous name (required)" style="flex:1; min-width:160px; padding:7px 10px; border-radius:7px; background:var(--bg); border:1px solid var(--border-solid); color:var(--text); font-size:0.82rem;">
         <button type="button" class="btn-outline" id="btnSaveNickname" style="width:auto; padding:6px 14px; font-size:0.78rem; margin:0;">Save</button>
         <span id="nicknameNotice" style="font-size:0.72rem;"></span>
       </div>
@@ -1047,7 +1047,7 @@
     </div>
   </div>
 
-  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-15-d</span></footer>
+  <footer class="note">sapkotap.com.np — secure authentication powered by Supabase Cloud <span id="buildStamp" style="opacity:.5">· build 2026-11-15-e</span></footer>
 
 <script>
 (function(){
@@ -1071,6 +1071,57 @@
   }
   function sanitize(str) {
     return escapeHtml(str);
+  }
+
+  // Forced-choice dialog (username / anonymous name). It has no close button on purpose.
+  function askNameDialog(o){
+    return new Promise(function(resolve){
+      const old = document.getElementById('nameDlgOverlay'); if(old) old.remove();
+      const ov = document.createElement('div'); ov.id = 'nameDlgOverlay';
+      ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;';
+      const box = document.createElement('div');
+      box.style.cssText = 'background:var(--surface);color:var(--text);border:1px solid var(--border-solid);border-radius:12px;padding:22px;max-width:420px;width:100%;';
+      const h3 = document.createElement('h3'); h3.textContent = o.title; h3.style.margin = '0 0 6px';
+      const p = document.createElement('p'); p.textContent = o.help; p.style.cssText = 'font-size:.82rem;color:var(--muted);margin:0 0 12px;';
+      const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = o.max || 24; inp.placeholder = o.placeholder || ''; inp.autocomplete = 'off';
+      inp.style.cssText = 'width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-solid);background:var(--surface-2);color:var(--text);';
+      const err = document.createElement('div'); err.style.cssText = 'color:var(--danger);font-size:.8rem;min-height:18px;margin:6px 0;';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.textContent = o.button || 'Save';
+      box.appendChild(h3); box.appendChild(p); box.appendChild(inp); box.appendChild(err); box.appendChild(btn);
+      ov.appendChild(box); document.body.appendChild(ov); inp.focus();
+      async function go(){
+        const v = inp.value.trim();
+        if(!v){ err.textContent = 'Type a name first.'; return; }
+        btn.disabled = true;
+        const args = {}; args[o.param] = v;
+        const { error } = await supabase.rpc(o.rpc, args);
+        btn.disabled = false;
+        if(error){ err.textContent = error.message; return; }
+        ov.remove(); resolve(v);
+      }
+      btn.addEventListener('click', go);
+      inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') go(); });
+    });
+  }
+
+  let nickDialogOpen = false;
+  async function ensureNickname(){
+    if(!supabase || !sessionUser || nickDialogOpen) return;
+    try{
+      const { data } = await supabase.from('profiles').select('chat_nickname').eq('id', sessionUser.id).maybeSingle();
+      if(data && data.chat_nickname && data.chat_nickname.trim().length >= 3) return;
+    }catch(e){ return; }   // cannot check: never lock someone out because of that
+    nickDialogOpen = true;
+    try{
+      const chosen = await askNameDialog({
+        title: 'Choose your anonymous name',
+        help: 'Everyone chats under an anonymous name, so nobody sees your real name or username. 3-24 letters, numbers or spaces. It cannot be your name, username or email, and it must not already be taken.',
+        placeholder: 'e.g. BlueFox', rpc: 'set_my_nickname', param: 'p_nick', max: 24, button: 'Save and continue'
+      });
+      const ni = document.getElementById('communityNameInput'); if(ni) ni.value = chosen;
+      const ci = document.getElementById('chatNicknameInput'); if(ci) ci.value = chosen;
+      try{ loadAcceptedContacts(); }catch(e){}
+    } finally { nickDialogOpen = false; }
   }
   let idleTimer = null;
 
@@ -1670,7 +1721,18 @@
 
     loadUserFiles(user.id);
 
-    
+    try{
+      const prov = (user.app_metadata && user.app_metadata.provider) || 'email';
+      const local = (user.email || '').split('@')[0].toLowerCase();
+      if(prov !== 'email' && (!profile || !profile.username || String(profile.username).toLowerCase() === local)){
+        askNameDialog({
+          title: 'Choose your username',
+          help: 'Pick a unique username: 3-20 letters, numbers or underscores. A username that is already taken cannot be used.',
+          placeholder: 'username', rpc: 'set_my_username', param: 'p_username', max: 20, button: 'Save username'
+        });
+      }
+    }catch(e){}
+
     if(isAdmin){
       const tabAdm = document.getElementById('tabBtnAdmin');
       if(tabAdm) {
@@ -2466,6 +2528,14 @@
       showStatus("Setup incomplete: Supabase URL/key are missing or invalid in the script. Nothing will work until these are set.", "bad");
       return;
     }
+    try{
+      const q = new URLSearchParams(location.search + '&' + location.hash.replace(/^#/, ''));
+      const ed = q.get('error_description') || q.get('error');
+      if(ed){
+        showStatus('Sign-in problem: ' + ed, 'bad');
+        try{ history.replaceState(null, '', location.pathname); }catch(e){}
+      }
+    }catch(e){}
     const { data: { session } } = await supabase.auth.getSession();
     if(session){
       sessionUser = session.user;
@@ -2485,6 +2555,7 @@
   let communityPollInterval = null;
 
   function switchDashboardTab(tabName){
+    if(tabName === 'Chat' || tabName === 'Community') ensureNickname();
     const tabs = ['Files', 'Chat', 'Community', 'Support', 'Security', 'Admin'];
     tabs.forEach(t => {
       const btn = document.getElementById('tabBtn' + t);
@@ -2916,8 +2987,10 @@
     if(!input || !supabase || !sessionUser) return;
     const val = input.value.trim().slice(0, 40);
     try{
-      const { error } = await supabase.from('profiles').update({ chat_nickname: val || null }).eq('id', sessionUser.id);
+      if(!val){ notice.textContent = 'Your anonymous name is required.'; notice.style.color = 'var(--danger)'; return; }
+      const { error } = await supabase.rpc('set_my_nickname', { p_nick: val });
       if(error) throw error;
+      const ci2 = document.getElementById('communityNameInput'); if(ci2) ci2.value = val;
       notice.textContent = "Saved.";
       notice.style.color = "var(--good)";
       loadAcceptedContacts();
@@ -3096,7 +3169,7 @@
       cont.innerHTML = '';
       otherUserIds.forEach(uid => {
         const p = profMap[uid] || { username: 'user', full_name: 'Contact', chat_nickname: '' };
-        const displayName = p.chat_nickname || ('@' + p.username);
+        const displayName = p.chat_nickname || 'Anonymous user';
         const isSel = (uid === activeChatContactId);
 
         const row = document.createElement('div');
@@ -3111,7 +3184,7 @@
 
         const subEl = document.createElement('div');
         subEl.style.cssText = 'font-size:0.75rem; color:var(--muted);';
-        subEl.textContent = p.chat_nickname ? ('@' + p.username) : (p.full_name || '');
+        subEl.textContent = '';
 
         row.appendChild(nameEl);
         row.appendChild(subEl);
@@ -3126,7 +3199,7 @@
   window.selectChatContact = function(userId, username, nickname){
     activeChatContactId = userId;
     activeChatContactName = username;
-    document.getElementById('chatHeader').innerHTML = '<span>Chatting with ' + escapeHtml(nickname || ("@" + username)) + '</span> <a href="#" style="float:right; font-size:0.72rem; color:var(--danger); text-decoration:none; font-weight:600;" onclick="event.preventDefault(); window.reportChatUser()">Report user</a>';
+    document.getElementById('chatHeader').innerHTML = '<span>Chatting with ' + escapeHtml(nickname || 'Anonymous user') + '</span> <a href="#" style="float:right; font-size:0.72rem; color:var(--danger); text-decoration:none; font-weight:600;" onclick="event.preventDefault(); window.reportChatUser()">Report user</a>';
     lastChatSig = '';
     document.getElementById('chatInputBar').style.display = 'flex';
     loadAcceptedContacts();
@@ -3143,6 +3216,35 @@
     if(r.data && r.data.signedUrl) chatSignedCache.set(key, { url: r.data.signedUrl, exp: Date.now() + 50*60*1000 });
     return r;
   }
+
+
+  /* --- Delete my own account (Security tab) --- */
+  (function(){
+    const tab = document.getElementById('tabContentSecurity');
+    if(!tab) return;
+    const card = document.createElement('div');
+    card.style.cssText = 'margin-top:26px;border:1px solid var(--danger);border-radius:10px;padding:16px;';
+    const t = document.createElement('div'); t.textContent = 'Delete my account'; t.style.cssText = 'font-weight:700;color:var(--danger);margin-bottom:6px;';
+    const d = document.createElement('p'); d.style.cssText = 'font-size:.8rem;color:var(--muted);margin:0 0 10px;';
+    d.textContent = 'This permanently removes your account and sign-in. It cannot be undone. Type DELETE MY ACCOUNT to confirm.';
+    const inp = document.createElement('input'); inp.type = 'text'; inp.autocomplete = 'off'; inp.placeholder = 'DELETE MY ACCOUNT';
+    inp.style.cssText = 'width:100%;padding:9px;border-radius:8px;border:1px solid var(--border-solid);background:var(--surface-2);color:var(--text);margin-bottom:8px;';
+    const out = document.createElement('div'); out.style.cssText = 'font-size:.8rem;min-height:16px;margin-bottom:6px;';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = 'Delete my account';
+    b.style.cssText = 'background:var(--danger);border-color:var(--danger);color:#fff;width:auto;';
+    b.addEventListener('click', async function(){
+      if(inp.value.trim() !== 'DELETE MY ACCOUNT'){ out.style.color = 'var(--danger)'; out.textContent = 'Type DELETE MY ACCOUNT exactly.'; return; }
+      if(!confirm('Delete your account for good? This cannot be undone.')) return;
+      b.disabled = true;
+      const { error } = await supabase.rpc('delete_my_account');
+      if(error){ b.disabled = false; out.style.color = 'var(--danger)'; out.textContent = error.message; return; }
+      try{ await supabase.auth.signOut(); }catch(e){}
+      alert('Your account has been deleted.');
+      window.location.reload();
+    });
+    card.appendChild(t); card.appendChild(d); card.appendChild(inp); card.appendChild(out); card.appendChild(b);
+    tab.appendChild(card);
+  })();
 
   window.deleteMyChatMessage = async function(id){
     if(!confirm('Are you sure you want to delete this message?')) return;
@@ -3189,7 +3291,7 @@
       // must still hide them, otherwise a deleted message looks like it was never deleted.
       const msgs = (allMsgs || []).filter(m => !m.deleted_at);
       if(!msgs || msgs.length === 0){
-        box.innerHTML = `<div style="color:var(--muted); font-size:0.8rem; text-align:center; margin-top:40px;">No messages yet. Say hi to @${escapeHtml(username)}!</div>`;
+        box.innerHTML = `<div style="color:var(--muted); font-size:0.8rem; text-align:center; margin-top:40px;">No messages yet. Say hi!</div>`;
         return;
       }
 
@@ -3423,13 +3525,14 @@
     // Pre-fill the name box with a saved nickname/username if the person has one,
     // but it stays fully editable — they can post under a different name each time.
     const nameInput = document.getElementById('communityNameInput');
-    if(nameInput && !nameInput.value){
+    if(nameInput){
+      nameInput.readOnly = true;
+      nameInput.title = 'Your anonymous name (change it under Chat)';
+      nameInput.placeholder = 'Set your anonymous name';
       try{
-        const { data } = await supabase.from('profiles').select('chat_nickname, username').eq('id', sessionUser.id).maybeSingle();
-        nameInput.value = (data && (data.chat_nickname || data.username)) || 'Anonymous';
-      }catch(e){
-        nameInput.value = 'Anonymous';
-      }
+        const { data } = await supabase.from('profiles').select('chat_nickname').eq('id', sessionUser.id).maybeSingle();
+        nameInput.value = (data && data.chat_nickname) || '';
+      }catch(e){}
     }
 
     // Check suspension quietly via the RPC (never reveals to the user *why*
@@ -3523,7 +3626,8 @@
       return;
     }
 
-    const displayName = (nameInput?.value || '').trim().slice(0, 40) || 'Anonymous';
+    if(!(nameInput?.value || '').trim()){ await ensureNickname(); return; }
+    const displayName = (nameInput?.value || '').trim().slice(0, 40);
     input.value = "";
 
     try{
