@@ -179,7 +179,10 @@
     if (lvl.data && lvl.data.currentLevel === 'aal2') return;
     var fl = await sb.auth.mfa.listFactors();
     if (fl.error) throw new Error(fl.error.message);
-    var verified = (fl.data.totp || [])[0];
+    var verifiedFactors = (fl.data.totp || [])
+  .filter(f => f.status === 'verified');
+
+var verified = verifiedFactors[0] || null;
     show('sMfa');
     return new Promise(function (resolve) {
       var factorId = null, enrolling = false;
