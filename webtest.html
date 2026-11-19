@@ -3,633 +3,513 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pramod Sapkota — Creative Developer & Consultant</title>
-<meta name="description" content="Portfolio and development services by Pramod Sapkota.">
-<meta name="author" content="Pramod Sapkota">
-<link rel="icon" type="image/jpeg" href="favicon.jpg">
-
-<!-- Classic Serif & Sans Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+10:wght@300;400;600&display=swap" rel="stylesheet">
-
-<!-- EmailJS SDK -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script type="text/javascript">
-    (function(){
-        // Replace 'YOUR_PUBLIC_KEY' with your actual EmailJS key
-        if (window.emailjs) emailjs.init("YOUR_PUBLIC_KEY");
-    })();
-</script>
-
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/; style-src 'unsafe-inline'; img-src data:; connect-src https://hkwjnzohrzydmdyigwjr.supabase.co; base-uri 'none'; form-action 'none'">
+<title>Security Console</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" crossorigin="anonymous"></script>
 <style>
-:root {
-    --bg-color: #0d0f12;
-    --paper-card: #14181f;
-    --border-gold: #c5a059;
-    --border-subtle: rgba(197, 160, 89, 0.25);
-    --text-primary: #f2ebd9;
-    --text-muted: #a3a8b2;
-    --accent-gold: #d4af37;
-}
-
-.light {
-    --bg-color: #f7f5f0;
-    --paper-card: #ffffff;
-    --border-gold: #9e7b3b;
-    --border-subtle: rgba(158, 123, 59, 0.25);
-    --text-primary: #1c1d1f;
-    --text-muted: #5e626a;
-    --accent-gold: #8c6d31;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    scroll-behavior: smooth;
-}
-
-body {
-    background-color: var(--bg-color);
-    color: var(--text-primary);
-    font-family: 'Source Sans 10', Georgia, serif;
-    line-height: 1.7;
-    transition: background-color 0.4s ease, color 0.4s ease;
-}
-
-h1, h2, h3, .brand {
-    font-family: 'Cinzel', serif;
-    letter-spacing: 1px;
-}
-
-.serif-italic {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-}
-
-/* Header & Navigation */
-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--bg-color);
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-nav {
-    max-width: 1100px;
-    margin: auto;
-    padding: 25px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-}
-
-.brand {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--accent-gold);
-    text-transform: uppercase;
-    text-decoration: none;
-    letter-spacing: 2px;
-}
-
-nav ul {
-    display: flex;
-    gap: 35px;
-    list-style: none;
-}
-
-nav a {
-    color: var(--text-primary);
-    text-decoration: none;
-    font-size: 14px;
-    font-family: 'Cinzel', serif;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: color 0.3s;
-}
-
-nav a:hover {
-    color: var(--accent-gold);
-}
-
-.nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.toggle-theme {
-    background: transparent;
-    border: 1px solid var(--border-subtle);
-    color: var(--accent-gold);
-    padding: 8px 16px;
-    cursor: pointer;
-    font-family: 'Cinzel', serif;
-    font-size: 12px;
-    letter-spacing: 1px;
-    transition: 0.3s;
-}
-
-.toggle-theme:hover {
-    border-color: var(--accent-gold);
-}
-
-/* Hamburger button — pure CSS, no icon library needed */
-.menu-toggle {
-    display: none;
-    background: transparent;
-    border: 1px solid var(--accent-gold);
-    width: 44px;
-    height: 38px;
-    padding: 0;
-    cursor: pointer;
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.menu-toggle span {
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    height: 2px;
-    background: var(--accent-gold);
-    transition: transform 0.3s ease, opacity 0.2s ease, top 0.3s ease;
-}
-
-.menu-toggle span:nth-child(1) { top: 11px; }
-.menu-toggle span:nth-child(2) { top: 17px; }
-.menu-toggle span:nth-child(3) { top: 23px; }
-
-/* Turns into an X when open */
-.menu-toggle.active span:nth-child(1) { top: 17px; transform: rotate(45deg); }
-.menu-toggle.active span:nth-child(2) { opacity: 0; }
-.menu-toggle.active span:nth-child(3) { top: 17px; transform: rotate(-45deg); }
-
-/* Hero Section */
-.hero {
-    max-width: 1000px;
-    margin: 100px auto 80px;
-    padding: 0 20px;
-    text-align: center;
-}
-
-.hero-subtitle {
-    font-family: 'Cinzel', serif;
-    color: var(--accent-gold);
-    font-size: 14px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 15px;
-}
-
-.hero h1 {
-    font-size: 52px;
-    font-weight: 600;
-    line-height: 1.25;
-    margin-bottom: 25px;
-}
-
-.divider {
-    width: 80px;
-    height: 2px;
-    background: var(--accent-gold);
-    margin: 30px auto;
-}
-
-.hero p {
-    font-size: 20px;
-    color: var(--text-muted);
-    max-width: 720px;
-    margin: 0 auto 40px;
-}
-
-.hero-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-}
-
-.btn-classic {
-    display: inline-block;
-    padding: 14px 32px;
-    border: 1px solid var(--accent-gold);
-    color: var(--accent-gold);
-    text-decoration: none;
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    background: transparent;
-    cursor: pointer;
-    text-align: center;
-}
-
-.btn-classic:hover {
-    background: var(--accent-gold);
-    color: var(--bg-color);
-}
-
-/* Sections */
-section {
-    max-width: 1000px;
-    margin: 100px auto;
-    padding: 0 20px;
-}
-
-.section-header {
-    text-align: center;
-    margin-bottom: 60px;
-}
-
-.section-header h2 {
-    font-size: 32px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-}
-
-.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-}
-
-.classic-card {
-    background: var(--paper-card);
-    border: 1px solid var(--border-subtle);
-    padding: 40px 30px;
-    transition: border-color 0.3s;
-}
-
-.classic-card:hover {
-    border-color: var(--accent-gold);
-}
-
-.classic-card h3 {
-    font-size: 20px;
-    margin-bottom: 15px;
-    color: var(--accent-gold);
-}
-
-.classic-card p {
-    color: var(--text-muted);
-    font-size: 15px;
-}
-
-/* Contact Form */
-.contact-form {
-    background: var(--paper-card);
-    border: 1px solid var(--border-subtle);
-    padding: 40px;
-}
-
-.form-group {
-    margin-bottom: 25px;
-}
-
-.form-group label {
-    display: block;
-    font-family: 'Cinzel', serif;
-    font-size: 12px;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    color: var(--accent-gold);
-    text-transform: uppercase;
-}
-
-input, textarea {
-    width: 100%;
-    padding: 12px 15px;
-    background: transparent;
-    border: 1px solid var(--border-subtle);
-    color: var(--text-primary);
-    font-family: 'Source Sans 10', serif;
-    font-size: 16px; /* prevents iOS zoom on focus */
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-input:focus, textarea:focus {
-    border-color: var(--accent-gold);
-}
-
-textarea {
-    height: 130px;
-    resize: vertical;
-}
-
-#form-status {
-    margin-top: 15px;
-    font-size: 14px;
-    text-align: center;
-    font-family: 'Cinzel', serif;
-}
-
-.link-container {
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-subtle);
-    text-align: center;
-}
-
-.link-container p {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-    font-family: 'Cinzel', serif;
-    letter-spacing: 1px;
-}
-
-.link-container .btn-classic {
-    display: block;
-    width: 100%;
-    margin-bottom: 12px;
-}
-
-footer {
-    border-top: 1px solid var(--border-subtle);
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-    font-size: 13px;
-    font-family: 'Cinzel', serif;
-    letter-spacing: 1px;
-}
-
-/* ---------- Mobile ---------- */
-@media (max-width: 768px) {
-    nav {
-        padding: 16px 20px;
-        flex-wrap: wrap;
-    }
-
-    .brand {
-        font-size: 17px;
-        letter-spacing: 1px;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    /* Menu becomes a dropdown instead of being hidden */
-    nav ul {
-        display: none;
-        flex-direction: column;
-        gap: 0;
-        width: 100%;
-        order: 3;
-        margin-top: 12px;
-        border-top: 1px solid var(--border-subtle);
-    }
-
-    nav ul.open {
-        display: flex;
-    }
-
-    nav ul li {
-        border-bottom: 1px solid var(--border-subtle);
-    }
-
-    nav ul li:last-child {
-        border-bottom: none;
-    }
-
-    nav ul a {
-        display: block;
-        padding: 16px 4px;
-        font-size: 14px;
-    }
-
-    .hero { margin: 60px auto 50px; }
-    .hero h1 { font-size: 34px; }
-    .hero p { font-size: 17px; }
-    .hero-buttons .btn-classic { width: 100%; max-width: 320px; }
-
-    section { margin: 60px auto; }
-    .section-header { margin-bottom: 40px; }
-    .section-header h2 { font-size: 26px; }
-
-    .grid-2 { grid-template-columns: 1fr; gap: 30px; }
-    .grid-3 { grid-template-columns: 1fr; }
-
-    .classic-card { padding: 30px 22px; }
-    .contact-form { padding: 28px 20px; }
-}
-
-@media (max-width: 380px) {
-    .brand { font-size: 14px; }
-    .toggle-theme { padding: 8px 10px; }
-}
+  :root{--bg:#06080d;--card:#0d121d;--line:#1c2638;--text:#e6ecf5;--mut:#8593a8;--acc:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#ff3366;--mono:ui-monospace,Menlo,Consolas,monospace}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--text);font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif;min-height:100vh}
+  .hide{display:none!important}
+  .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;width:100%;max-width:440px}
+  .box h2{margin:0 0 6px;font-family:var(--mono);font-size:18px}
+  .tag{font:11px var(--mono);color:var(--mut);letter-spacing:.08em;margin-bottom:10px}
+  input,textarea,select{width:100%;background:#080c14;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:11px;font:inherit;margin:8px 0}
+  input:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:-1px}
+  button{font:600 13px var(--mono);border-radius:8px;border:1px solid var(--line);background:#121a29;color:var(--text);padding:10px 14px;cursor:pointer}
+  button:hover{border-color:var(--acc)} button:disabled{opacity:.5;cursor:not-allowed}
+  button.pri{background:var(--acc);color:#04222a;border-color:var(--acc)}
+  button.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+  .err{color:var(--bad);font-size:13px;min-height:18px}
+  .ok{color:var(--ok)} .mut{color:var(--mut)}
+  header{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);background:#0a0f19;position:sticky;top:0;z-index:5}
+  header b{font-family:var(--mono)}
+  nav{display:flex;gap:6px;flex-wrap:wrap;padding:12px 20px 0}
+  nav button.on{border-color:var(--acc);color:var(--acc)}
+  main{padding:16px 20px 60px;max-width:1100px;margin:0 auto}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:12px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card .k{font:11px var(--mono);color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+  .card .v{font:700 24px var(--mono);margin-top:4px}
+  .banner{padding:12px 16px;border-radius:10px;border:1px solid var(--line);margin:12px 0;font-family:var(--mono);font-size:13px}
+  .banner.off{border-color:#14532d;color:var(--ok)} .banner.readonly{border-color:#78350f;color:var(--warn)} .banner.lockdown{border-color:#7f1d1d;color:var(--bad)}
+  table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;word-break:break-word}
+  th{font:11px var(--mono);color:var(--mut);text-transform:uppercase}
+  .sev{font:700 11px var(--mono);padding:2px 8px;border-radius:99px;border:1px solid}
+  .CRITICAL,.HIGH{color:var(--bad)} .MEDIUM{color:var(--warn)} .LOW,.INFO{color:var(--acc)} .OK{color:var(--ok)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .scroll{overflow-x:auto}
+  h3{margin:22px 0 6px;font-family:var(--mono);font-size:15px}
+  @media(max-width:600px){main,header,nav{padding-left:12px;padding-right:12px}}
 </style>
 </head>
-
 <body>
 
-<header>
-    <nav>
-        <a href="#" class="brand">Pramod Sapkota</a>
+<!-- DENIED -->
+<div id="sDenied" class="center hide"><div class="box" style="text-align:center">
+  <div class="tag">SECURITY BARRIER</div><h2 style="color:var(--bad)">ACCESS DENIED</h2>
+  <p id="deniedMsg" class="mut">Access denied.</p>
+  <button id="btnDeniedBack">Return to login</button>
+</div></div>
 
-        <ul id="nav-menu">
-            <li><a href="#about">About</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="page0001/">GET STARTED</a></li>
-            <li><a href="Work/">More additional work</a></li>
-        </ul>
+<!-- GATE: two private questions (server-checked) -->
+<div id="sGate" class="center hide"><div class="box">
+  <div class="tag" id="gateStep">STEP 1 OF 2</div>
+  <h2 id="gateQ">Notes</h2>
+  <input id="gateIn" type="password" autocomplete="off" spellcheck="false" placeholder="Type here">
+  <div id="gateErr" class="err"></div>
+  <button class="pri" id="gateBtn" style="width:100%">CONTINUE</button>
+</div></div>
 
-        <div class="nav-actions">
-            <button type="button" class="toggle-theme" id="theme-btn">Theme</button>
-            <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-                <span></span><span></span><span></span>
-            </button>
-        </div>
-    </nav>
-</header>
+<!-- AUTHENTICATOR -->
+<div id="sMfa" class="center hide"><div class="box">
+  <div class="tag">STEP 3 OF 3 · AUTHENTICATOR</div>
+  <h2 id="mfaTitle">Enter your 6-digit code</h2>
+  <p id="mfaHelp" class="mut" style="font-size:13px"></p>
+  <div id="mfaQr" style="text-align:center"></div>
+  <div id="mfaSecret" class="mut" style="font:12px var(--mono);word-break:break-all;margin:6px 0"></div>
+  <input id="mfaIn" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456">
+  <div id="mfaErr" class="err"></div>
+  <button class="pri" id="mfaBtn" style="width:100%">VERIFY</button>
+</div></div>
 
-<main>
-    <!-- Hero Section -->
-    <div class="hero">
-        <p class="hero-subtitle">Creative Developer & Digital Craftsman</p>
-        <h1>Crafting Timeless & Elegant <span class="serif-italic">Web Experiences</span></h1>
-        <div class="divider"></div>
-        <p>Combining classical aesthetics with modern engineering. Focused on bespoke web development, architecture, and intuitive digital design.</p>
-        <div class="hero-buttons">
-            <a class="btn-classic" href="#contact">Inquire Services</a>
-            <a class="btn-classic" href="page0001/">Get Started</a>
-            <a class="btn-classic" href="Work/">More additional work</a>
-        </div>
-    </div>
-
-    <!-- About Section -->
-    <section id="about">
-        <div class="section-header">
-            <h2>About</h2>
-            <div class="divider"></div>
-        </div>
-
-        <div class="grid-2">
-            <div class="classic-card">
-                <h3>Philosophy</h3>
-                <p>Digital products should be built with craftsmanship, structure, and endurance. I create tailored web solutions that emphasize clarity, performance, and refined aesthetic detail.</p>
-            </div>
-            <div class="classic-card">
-                <h3>Expertise</h3>
-                <p>Specializing in full-stack web applications, front-end architecture, bespoke user interfaces, and clean, maintainable code standards across platforms.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Services Section -->
-    <section id="services">
-        <div class="section-header">
-            <h2>Provided Services</h2>
-            <div class="divider"></div>
-        </div>
-
-        <div class="grid-3">
-            <div class="classic-card">
-                <h3>Custom Web Engineering</h3>
-                <p>Handcrafted web applications built to precision with clean HTML, modern CSS, and tailored JavaScript implementations.</p>
-            </div>
-
-            <div class="classic-card">
-                <h3>Architectural Design</h3>
-                <p>Establishing organized design systems, clear layout structures, and timeless visual identity for digital products.</p>
-            </div>
-
-            <div class="classic-card">
-                <h3>Technical Consultation</h3>
-                <p>Code review, performance optimization, and strategic development consulting for existing digital platforms.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact">
-        <div class="section-header">
-            <h2>Send a Message</h2>
-            <div class="divider"></div>
-        </div>
-
-        <div class="grid-2">
-            <div class="classic-card">
-                <h3>Contact Details</h3>
-                <p style="margin-bottom: 20px;">For inquiries, collaborations, or service requests, please send a message using the form or reach out directly.</p>
-                <p><strong>Email:</strong> origincircle5@gmail.com</p>
-                <p style="margin-top: 10px;"><strong>Location:</strong> Kathmandu, Nepal</p>
-            </div>
-
-            <form class="contact-form" id="contact-form">
-                <div class="form-group">
-                    <label for="user_name">Full Name</label>
-                    <input type="text" id="user_name" name="user_name" required>
-                </div>
-                <div class="form-group">
-                    <label for="user_email">Email Address</label>
-                    <input type="email" id="user_email" name="user_email" required>
-                </div>
-                <div class="form-group">
-                    <label for="message">Your Message</label>
-                    <textarea id="message" name="message" required></textarea>
-                </div>
-                <button type="submit" class="btn-classic" style="width: 100%;">Transmit Message</button>
-                <div id="form-status"></div>
-
-                <div class="link-container">
-                    <p>Looking for additional work?</p>
-                    <a href="page0001/" class="btn-classic">GET STARTED</a>
-                    <a href="Work/" class="btn-classic">More additional work</a>
-                </div>
-            </form>
-        </div>
-    </section>
-</main>
-
-<footer>
-    <p>© 2026 Pramod Sapkota. All Rights Reserved.</p>
-</footer>
+<!-- APP -->
+<div id="sApp" class="hide">
+  <header><b>SECURITY CONSOLE</b>
+    <div class="row"><span id="idle" class="mut" style="font:12px var(--mono)"></span><button id="btnOut">Sign out</button></div>
+  </header>
+  <nav id="tabs"></nav>
+  <main>
+    <div id="lockBanner" class="banner off">Site lock: OFF</div>
+    <section id="t-overview"></section>
+    <section id="t-emergency" class="hide"></section>
+    <section id="t-audit" class="hide"></section>
+    <section id="t-backup" class="hide"></section>
+    <section id="t-log" class="hide"></section>
+  </main>
+</div>
 
 <script>
-// Theme toggle
-document.getElementById("theme-btn").addEventListener("click", function () {
-    document.body.classList.toggle("light");
-});
+(function () {
+  'use strict';
+  if (window.top !== window.self) { document.documentElement.innerHTML = ''; return; }
 
-// Mobile menu
-var menuBtn = document.getElementById("menu-toggle");
-var menu = document.getElementById("nav-menu");
+  var SUPABASE_URL = 'https://hkwjnzohrzydmdyigwjr.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_EQoexcmNoJuos8Wla1Nykw_v5vwH1Qy';   // public key by design
+  var LOGIN_URL = '/page0001/';                                           // where "return to login" goes
+  var IDLE_MS = 10 * 60 * 1000;
 
-function setMenu(open) {
-    menu.classList.toggle("open", open);
-    menuBtn.classList.toggle("active", open);
-    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-}
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true } });
+  var $ = function (id) { return document.getElementById(id); };
 
-menuBtn.addEventListener("click", function () {
-    setMenu(!menu.classList.contains("open"));
-});
-
-// Close the menu after tapping a link (the page still navigates normally)
-menu.querySelectorAll("a").forEach(function (link) {
-    link.addEventListener("click", function () {
-        setMenu(false);
+  // ---- tiny safe DOM helper (never uses innerHTML) ----
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === 'class') el.className = attrs[k];
+      else if (k === 'text') el.textContent = attrs[k];
+      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), attrs[k]);
+      else el.setAttribute(k, attrs[k]);
     });
-});
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null) continue;
+      el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+  function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+  function show(id) { ['sDenied', 'sGate', 'sMfa', 'sApp'].forEach(function (s) { $(s).classList.toggle('hide', s !== id); }); }
+  function deny(msg) { $('deniedMsg').textContent = msg || 'Access denied.'; show('sDenied'); }
+  function fmtBytes(n) { n = Number(n) || 0; var u = ['B', 'KB', 'MB', 'GB', 'TB'], i = 0; while (n >= 1024 && i < 4) { n /= 1024; i++; } return n.toFixed(i ? 1 : 0) + ' ' + u[i]; }
+  async function rpc(name, args) { var r = await sb.rpc(name, args || {}); if (r.error) throw new Error(r.error.message); return r.data; }
+  async function signOut() { try { await sb.auth.signOut(); } catch (e) {} location.href = LOGIN_URL; }
+  $('btnDeniedBack').onclick = function () { location.href = LOGIN_URL; };
+  $('btnOut').onclick = signOut;
 
-// Reset menu state when resizing back to desktop
-window.addEventListener("resize", function () {
-    if (window.innerWidth > 768) setMenu(false);
-});
+  // ---------- step 0: must already be signed in as the owner ----------
+  async function boot() {
+    try {
+      var s = await sb.auth.getSession();
+      if (!s.data.session) return deny('Sign in on the main site first, then open this page.');
+      var owner = await rpc('am_i_owner');                 // decided by the database, not by this page
+      if (owner !== true) return deny('Access denied.');
+      await gate();
+      await mfa();
+      startApp();
+    } catch (e) { deny('Error: ' + e.message); }
+  }
 
-// Contact form with EmailJS & mailto fallback
-document.getElementById("contact-form").addEventListener("submit", function (e) {
-    e.preventDefault();
+  // ---------- step 1+2: two private questions, verified by the server ----------
+  function gate() {
+    return new Promise(function (resolve) {
+      var step = 1, first = '', fails = 0, lockedUntil = 0;
+      show('sGate'); $('gateIn').focus();
+      async function submit() {
+        var v = $('gateIn').value.trim(); if (!v) return;
+        if (Date.now() < lockedUntil) { $('gateErr').textContent = 'Wait ' + Math.ceil((lockedUntil - Date.now()) / 1000) + 's.'; return; }
+        if (step === 1) {
+          first = v; step = 2; $('gateStep').textContent = 'STEP 2 OF 3'; $('gateQ').textContent = 'Why did you build this site?';
+          $('gateIn').value = ''; $('gateErr').textContent = ''; $('gateIn').focus(); return;
+        }
+        $('gateBtn').disabled = true; $('gateBtn').textContent = 'VERIFYING...';
+        try {
+          var ok = await rpc('verify_admin_secret_layer', { note_answer: first, why_answer: v });
+          if (ok === true) { resolve(); return; }
+          throw new Error('wrong');
+        } catch (e) {
+          fails++; step = 1; first = '';
+          if (fails >= 3) { lockedUntil = Date.now() + 60000; fails = 0; }
+          $('gateErr').textContent = /locked/i.test(e.message) ? 'Too many attempts. Try later.' : 'Incorrect.';
+          $('gateStep').textContent = 'STEP 1 OF 3'; $('gateQ').textContent = 'Notes';
+        }
+        $('gateIn').value = ''; $('gateBtn').disabled = false; $('gateBtn').textContent = 'CONTINUE';
+      }
+      $('gateBtn').onclick = submit;
+      $('gateIn').onkeydown = function (e) { if (e.key === 'Enter') submit(); };
+    });
+  }
 
-    var statusDiv = document.getElementById("form-status");
-    statusDiv.style.color = "var(--accent-gold)";
-    statusDiv.innerText = "Transmitting message...";
+  // ---------- step 3: authenticator app (TOTP) -> session becomes aal2 ----------
+  var resolveMfa;
+  async function mfa() {
+    var auth = sb.auth.mfa;
 
-    var name = document.getElementById("user_name").value;
-    var email = document.getElementById("user_email").value;
-    var message = document.getElementById("message").value;
-    var form = this;
-
-    function mailtoFallback() {
-        var subject = encodeURIComponent("Inquiry from " + name);
-        var body = encodeURIComponent(message + "\n\n---\nFrom: " + name + "\nEmail: " + email);
-        window.location.href = "mailto:origincircle5@gmail.com?subject=" + subject + "&body=" + body;
-        statusDiv.innerText = "Opening mail client...";
-        form.reset();
+    function setError(message) {
+      $('mfaErr').textContent = message || '';
     }
 
-    if (!window.emailjs) {
-        mailtoFallback();
+    function setBusy(busy, label) {
+      $('mfaBtn').disabled = busy;
+      $('mfaBtn').textContent = label || (busy ? 'VERIFYING...' : 'VERIFY');
+    }
+
+    var assurance = await auth.getAuthenticatorAssuranceLevel();
+    if (assurance.error) {
+      throw new Error('Could not check your authenticator status. Please reload and try again.');
+    }
+    if (assurance.data && assurance.data.currentLevel === 'aal2') return;
+
+    var listed = await auth.listFactors();
+    if (listed.error) {
+      throw new Error('Could not load registered authenticator factors: ' + listed.error.message);
+    }
+
+    var allFactors = listed.data && Array.isArray(listed.data.all) ? listed.data.all : [];
+    var verifiedFactors = (listed.data && Array.isArray(listed.data.totp))
+      ? listed.data.totp.filter(function (factor) { return factor.status === 'verified'; })
+      : [];
+
+    show('sMfa');
+    $('mfaIn').value = '';
+    $('mfaErr').textContent = '';
+    $('mfaQr').replaceChildren();
+    $('mfaSecret').textContent = '';
+    $('mfaTitle').textContent = 'Enter your 6-digit code';
+    $('mfaBtn').textContent = 'VERIFY';
+    $('mfaBtn').disabled = false;
+
+    var factorId = null;
+    var busy = false;
+
+    // A verified factor still exists in Supabase even if its entry was
+    // deleted from the Google Authenticator app. Do not silently remove it.
+    if (verifiedFactors.length > 0) {
+      $('mfaTitle').textContent = 'Verify your registered authenticator';
+      $('mfaHelp').textContent =
+        'Supabase still has a verified authenticator registered. Open the matching entry on a device where it is still available.';
+
+      if (verifiedFactors.length === 1) {
+        factorId = verifiedFactors[0].id;
+      } else {
+        var selector = h('select', { 'aria-label': 'Choose registered authenticator' });
+        verifiedFactors.forEach(function (factor, index) {
+          selector.appendChild(h('option', {
+            value: factor.id,
+            text: factor.friendly_name || ('Authenticator ' + (index + 1))
+          }));
+        });
+        factorId = selector.value;
+        selector.addEventListener('change', function () {
+          factorId = selector.value;
+        });
+        $('mfaHelp').appendChild(document.createTextNode(' Select the authenticator: '));
+        $('mfaHelp').appendChild(selector);
+      }
+
+      $('mfaSecret').textContent =
+        'Lost the entry in Google Authenticator? This page cannot safely remove a verified factor. Use your account recovery process; do not share your service-role key.';
+    } else {
+      // No verified TOTP factor exists: offer a fresh enrollment.
+      $('mfaTitle').textContent = 'Set up a new authenticator';
+      $('mfaHelp').textContent =
+        'Scan this QR code with Google Authenticator, then enter the six-digit code it generates.';
+
+      var pendingFactors = allFactors.filter(function (factor) {
+        return factor.factor_type === 'totp' && factor.status !== 'verified';
+      });
+
+      // Leave existing pending factors untouched. If the project has reached
+      // its factor limit, show the error rather than deleting factors silently.
+      var enrollment = await auth.enroll({
+        factorType: 'totp',
+        friendlyName: 'Owner authenticator'
+      });
+
+      if (enrollment.error) {
+        var extra = pendingFactors.length
+          ? ' An unfinished enrollment already exists; inspect it in Supabase before removing anything.'
+          : '';
+        throw new Error('Could not start authenticator enrollment: ' + enrollment.error.message + extra);
+      }
+
+      factorId = enrollment.data.id;
+
+      var qr = h('img', {
+        src: enrollment.data.totp.qr_code,
+        alt: 'Authenticator enrollment QR code',
+        width: '190',
+        height: '190',
+        style: 'background:#fff;border-radius:8px;padding:6px'
+      });
+      $('mfaQr').appendChild(qr);
+      $('mfaSecret').textContent =
+        'Manual setup key: ' + enrollment.data.totp.secret +
+        ' — keep this key private.';
+    }
+
+    async function verify() {
+      if (busy) return;
+
+      var code = $('mfaIn').value.replace(/\s/g, '');
+      if (!/^\d{6}$/.test(code)) {
+        setError('Enter the six-digit code from your authenticator.');
         return;
+      }
+      if (!factorId) {
+        setError('No authenticator factor is selected. Reload the page and try again.');
+        return;
+      }
+
+      busy = true;
+      setBusy(true, 'VERIFYING...');
+      setError('');
+
+      try {
+        var result = await auth.challengeAndVerify({
+          factorId: factorId,
+          code: code
+        });
+
+        if (result.error) throw result.error;
+
+        var updated = await auth.getAuthenticatorAssuranceLevel();
+        if (updated.error || !updated.data || updated.data.currentLevel !== 'aal2') {
+          throw new Error('The code was accepted, but the session did not reach the required security level. Sign out and sign in again.');
+        }
+
+        setBusy(false, 'VERIFIED');
+        $('mfaIn').value = '';
+        // Resolving boot() allows the protected console to load.
+        return resolveMfa();
+      } catch (error) {
+        setError(error && error.message
+          ? error.message
+          : 'Verification failed. Check the code and try again.');
+        $('mfaIn').value = '';
+        $('mfaIn').focus();
+      } finally {
+        busy = false;
+        if ($('mfaBtn').textContent !== 'VERIFIED') setBusy(false, 'VERIFY');
+      }
     }
 
-    emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
-        from_name: name,
-        from_email: email,
-        message: message
-    }).then(function () {
-        statusDiv.innerText = "Message transmitted successfully.";
-        form.reset();
-    }, mailtoFallback);
-});
-</script>
+    return new Promise(function (resolve, reject) {
+      // Keep a reference so successful verification can continue boot().
+      resolveMfa = resolve;
+      $('mfaBtn').onclick = verify;
+      $('mfaIn').onkeydown = function (event) {
+        if (event.key === 'Enter') verify();
+      };
+    });
+  }
 
+  // ---------- app ----------
+  var TABS = [['overview', 'Overview'], ['emergency', 'Emergency'], ['audit', 'Security audit'], ['backup', 'Backup'], ['log', 'Activity']];
+  var current = 'overview', idleTimer, idleAt;
+
+  function startApp() {
+    show('sApp');
+    var nav = $('tabs'); clear(nav);
+    TABS.forEach(function (t) {
+      nav.appendChild(h('button', { 'data-t': t[0], text: t[1], onclick: function () { openTab(t[0]); } }));
+    });
+    openTab('overview');
+    ['click', 'keydown', 'mousemove', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, resetIdle, { passive: true }); });
+    resetIdle();
+    setInterval(refreshLock, 30000);
+    setInterval(tickIdle, 1000);
+  }
+  function resetIdle() { idleAt = Date.now() + IDLE_MS; }
+  function tickIdle() {
+    var left = idleAt - Date.now();
+    if (left <= 0) { signOut(); return; }
+    $('idle').textContent = left < 120000 ? 'auto sign-out in ' + Math.ceil(left / 1000) + 's' : '';
+  }
+  function openTab(name) {
+    current = name;
+    Array.prototype.forEach.call($('tabs').children, function (b) { b.classList.toggle('on', b.getAttribute('data-t') === name); });
+    TABS.forEach(function (t) { $('t-' + t[0]).classList.toggle('hide', t[0] !== name); });
+    ({ overview: tabOverview, emergency: tabEmergency, audit: tabAudit, backup: tabBackup, log: tabLog })[name]();
+    refreshLock();
+  }
+  async function refreshLock() {
+    try {
+      var st = await rpc('site_status'); var lv = (st && st.level) || 'off';
+      var b = $('lockBanner'); b.className = 'banner ' + lv;
+      b.textContent = lv === 'off' ? 'Site lock: OFF — the site is running normally.'
+        : lv === 'readonly' ? 'Site lock: READ-ONLY — nobody except you can post or change anything.'
+        : 'LOCKDOWN — everyone except you is locked out.';
+    } catch (e) {}
+  }
+  function stat(k, v) { return h('div', { class: 'card' }, h('div', { class: 'k', text: k }), h('div', { class: 'v', text: String(v) })); }
+  function msg(el, text, cls) { el.textContent = text; el.className = cls || ''; }
+
+  // ----- Overview -----
+  async function tabOverview() {
+    var box = $('t-overview'); clear(box); box.appendChild(h('p', { class: 'mut', text: 'Loading…' }));
+    try {
+      var o = await rpc('owner_overview'); clear(box);
+      var g = h('div', { class: 'grid' },
+        stat('Accounts', o.users), stat('Database size', fmtBytes(o.db_bytes)), stat('File storage', fmtBytes(o.storage_bytes)),
+        stat('Chat messages', o.chat_messages == null ? '-' : o.chat_messages), stat('Community posts', o.community_messages == null ? '-' : o.community_messages),
+        stat('Support messages', o.support_messages == null ? '-' : o.support_messages));
+      box.appendChild(g);
+      box.appendChild(h('p', { class: 'mut', style: 'font-size:13px', text: 'Supabase free plan: about 500 MB database and 1 GB files. Use the Backup tab regularly.' }));
+    } catch (e) { clear(box); box.appendChild(h('p', { class: 'err', text: 'Could not load: ' + e.message + ' (did you run SECURE_CONSOLE.sql?)' })); }
+  }
+
+  // ----- Emergency -----
+  function tabEmergency() {
+    var box = $('t-emergency'); clear(box);
+    var note = h('input', { id: 'emMsg', placeholder: 'Message shown to visitors (optional)', maxlength: '300' });
+    var confirmIn = h('input', { id: 'emConfirm', placeholder: 'Type the level in capitals to confirm, e.g. LOCKDOWN', autocomplete: 'off' });
+    var out = h('div', { class: 'err' });
+    var level = 'lockdown';
+    var sel = h('select', { onchange: function () { level = sel.value; confirmIn.placeholder = level === 'off' ? 'Type OFF to confirm' : 'Type ' + level.toUpperCase() + ' to confirm'; } },
+      h('option', { value: 'lockdown', text: 'Lockdown — everyone except me is locked out' }),
+      h('option', { value: 'readonly', text: 'Read-only — nobody can post or change anything' }),
+      h('option', { value: 'off', text: 'Off — site works normally' }));
+    var apply = h('button', { class: 'bad', text: 'APPLY', onclick: async function () {
+      if (confirmIn.value.trim() !== level.toUpperCase()) return msg(out, 'Type ' + level.toUpperCase() + ' exactly to confirm.', 'err');
+      apply.disabled = true;
+      try { await ensureAal2(); await rpc('set_site_lock', { new_level: level, new_message: note.value }); msg(out, 'Done: ' + level, 'ok'); confirmIn.value = ''; refreshLock(); }
+      catch (e) { msg(out, e.message, 'err'); }
+      apply.disabled = false;
+    } });
+    var so = h('input', { placeholder: 'Type SIGNOUT to confirm', autocomplete: 'off' });
+    var soOut = h('div', { class: 'err' });
+    var soBtn = h('button', { class: 'bad', text: 'SIGN EVERYONE OUT', onclick: async function () {
+      if (so.value.trim() !== 'SIGNOUT') return msg(soOut, 'Type SIGNOUT exactly to confirm.', 'err');
+      soBtn.disabled = true;
+      try { await ensureAal2(); var n = await rpc('owner_sign_out_everyone'); msg(soOut, n + ' sessions ended. People already signed in must sign in again.', 'ok'); so.value = ''; }
+      catch (e) { msg(soOut, e.message, 'err'); }
+      soBtn.disabled = false;
+    } });
+    box.appendChild(h('h3', { text: 'Emergency lock' }));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:13px', text: 'Enforced inside the database, so it cannot be bypassed from the website. Only your account keeps working.' }));
+    box.appendChild(h('div', { class: 'card' }, sel, note, confirmIn, apply, out));
+    box.appendChild(h('h3', { text: 'Sign everyone out' }));
+    box.appendChild(h('div', { class: 'card' }, so, soBtn, soOut));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:12px', text: 'Locked yourself out? In the Supabase SQL editor run: update public.site_lock set level = \'off\' where id = 1;' }));
+  }
+  async function ensureAal2() {
+    var lvl = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (lvl.data && lvl.data.currentLevel === 'aal2') return;
+    throw new Error('Authenticator not confirmed. Reload this page and finish step 3.');
+  }
+
+  // ----- Security audit -----
+  function tabAudit() {
+    var box = $('t-audit'); clear(box);
+    var out = h('div'); var btn = h('button', { class: 'pri', text: 'Run security audit', onclick: run });
+    box.appendChild(h('h3', { text: 'Security audit' }));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:13px', text: 'Reads your real database settings (row-level security, open policies, public files, authenticator). It does not guess.' }));
+    box.appendChild(btn); box.appendChild(out);
+    async function run() {
+      btn.disabled = true; clear(out); out.appendChild(h('p', { class: 'mut', text: 'Checking…' }));
+      try {
+        var rows = await rpc('security_audit'); clear(out);
+        var order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, INFO: 4, OK: 5 };
+        rows.sort(function (a, b) { return (order[a.severity] || 9) - (order[b.severity] || 9); });
+        var bad = rows.filter(function (r) { return r.severity === 'CRITICAL' || r.severity === 'HIGH'; }).length;
+        out.appendChild(h('div', { class: 'banner ' + (bad ? 'lockdown' : 'off'), text: bad ? bad + ' serious issue(s) found' : 'No critical or high issues found' }));
+        var tb = h('tbody');
+        rows.forEach(function (r) { tb.appendChild(h('tr', null, h('td', null, h('span', { class: 'sev ' + r.severity, text: r.severity })), h('td', { text: r.check_name }), h('td', { class: 'mut', text: r.detail }))); });
+        out.appendChild(h('div', { class: 'scroll card', style: 'padding:0' }, h('table', null, h('thead', null, h('tr', null, h('th', { text: 'Level' }), h('th', { text: 'Check' }), h('th', { text: 'Detail' }))), tb)));
+      } catch (e) { clear(out); out.appendChild(h('p', { class: 'err', text: e.message })); }
+      btn.disabled = false;
+    }
+    run();
+  }
+
+  // ----- Backup (whole-site export, encrypted in the browser) -----
+  function b64(buf) { var s = '', a = new Uint8Array(buf); for (var i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); }
+  async function encrypt(text, pass) {
+    var enc = new TextEncoder(), salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+    var km = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+    var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 310000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+    var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(text));
+    return JSON.stringify({ v: 1, kdf: 'PBKDF2-SHA256-310000', cipher: 'AES-256-GCM', salt: b64(salt), iv: b64(iv), data: b64(ct) });
+  }
+  function download(name, text) {
+    var a = h('a', { href: URL.createObjectURL(new Blob([text], { type: 'application/json' })), download: name });
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function tabBackup() {
+    var box = $('t-backup'); clear(box);
+    var pass = h('input', { type: 'password', placeholder: 'Backup passphrase (min 12 characters)', autocomplete: 'new-password' });
+    var pass2 = h('input', { type: 'password', placeholder: 'Repeat passphrase', autocomplete: 'new-password' });
+    var out = h('div', { class: 'err' });
+    var btn = h('button', { class: 'pri', text: 'Download encrypted backup', onclick: async function () {
+      if (pass.value.length < 12) return msg(out, 'Use a passphrase of at least 12 characters.', 'err');
+      if (pass.value !== pass2.value) return msg(out, 'Passphrases do not match.', 'err');
+      btn.disabled = true; msg(out, 'Exporting…', 'mut');
+      try {
+        await ensureAal2();
+        var data = await rpc('owner_backup');
+        var text = await encrypt(JSON.stringify(data), pass.value);
+        var d = new Date().toISOString().slice(0, 10);
+        download('sapkotap-backup-' + d + '.json.enc', text);
+        msg(out, 'Saved. Store it somewhere safe, and keep the passphrase separate from the file. Lose the passphrase and the backup cannot be opened.', 'ok');
+        pass.value = ''; pass2.value = '';
+      } catch (e) { msg(out, e.message, 'err'); }
+      btn.disabled = false;
+    } });
+    box.appendChild(h('h3', { text: 'Whole-site backup' }));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:13px', text: 'Exports every table (profiles, messages, reports, admin types, moderation history, settings) plus the account list without passwords. It is encrypted here in your browser before it is saved, so nobody can read it without your passphrase.' }));
+    box.appendChild(h('div', { class: 'card' }, pass, pass2, btn, out));
+    box.appendChild(h('p', { class: 'mut', style: 'font-size:12px', text: 'Uploaded files (images, voice) are not in this export. Use the daily GitHub backup job for those, and keep one copy off Supabase.' }));
+  }
+
+  // ----- Activity log -----
+  async function tabLog() {
+    var box = $('t-log'); clear(box); box.appendChild(h('h3', { text: 'Emergency-lock activity' }));
+    try {
+      var r = await sb.from('site_lock_log').select('*').order('created_at', { ascending: false }).limit(100);
+      if (r.error) throw new Error(r.error.message);
+      var tb = h('tbody');
+      (r.data || []).forEach(function (x) { tb.appendChild(h('tr', null, h('td', { text: new Date(x.created_at).toLocaleString() }), h('td', { text: x.level }), h('td', { class: 'mut', text: x.message || '' }))); });
+      if (!(r.data || []).length) tb.appendChild(h('tr', null, h('td', { colspan: '3', class: 'mut', text: 'Nothing yet.' })));
+      box.appendChild(h('div', { class: 'scroll card', style: 'padding:0' }, h('table', null, h('thead', null, h('tr', null, h('th', { text: 'Time' }), h('th', { text: 'Action' }), h('th', { text: 'Message' }))), tb)));
+    } catch (e) { box.appendChild(h('p', { class: 'err', text: e.message })); }
+  }
+
+  boot();
+})();
+</script>
 </body>
 </html>
