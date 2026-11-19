@@ -174,40 +174,166 @@
   }
 
   // ---------- step 3: authenticator app (TOTP) -> session becomes aal2 ----------
+  var resolveMfa;
   async function mfa() {
-    var lvl = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (lvl.data && lvl.data.currentLevel === 'aal2') return;
-    var fl = await sb.auth.mfa.listFactors();
-    if (fl.error) throw new Error(fl.error.message);
-    var verified = (fl.data.totp || [])[0];
+    var auth = sb.auth.mfa;
+
+    function setError(message) {
+      $('mfaErr').textContent = message || '';
+    }
+
+    function setBusy(busy, label) {
+      $('mfaBtn').disabled = busy;
+      $('mfaBtn').textContent = label || (busy ? 'VERIFYING...' : 'VERIFY');
+    }
+
+    var assurance = await auth.getAuthenticatorAssuranceLevel();
+    if (assurance.error) {
+      throw new Error('Could not check your authenticator status. Please reload and try again.');
+    }
+    if (assurance.data && assurance.data.currentLevel === 'aal2') return;
+
+    var listed = await auth.listFactors();
+    if (listed.error) {
+      throw new Error('Could not load registered authenticator factors: ' + listed.error.message);
+    }
+
+    var allFactors = listed.data && Array.isArray(listed.data.all) ? listed.data.all : [];
+    var verifiedFactors = (listed.data && Array.isArray(listed.data.totp))
+      ? listed.data.totp.filter(function (factor) { return factor.status === 'verified'; })
+      : [];
+
     show('sMfa');
-    return new Promise(function (resolve) {
-      var factorId = null, enrolling = false;
-      async function setup() {
-        // remove half-finished enrolments, then start a fresh one
-        var all = (fl.data.all || []).filter(function (f) { return f.status !== 'verified'; });
-        for (var i = 0; i < all.length; i++) { try { await sb.auth.mfa.unenroll({ factorId: all[i].id }); } catch (e) {} }
-        var en = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'owner-' + Date.now() });
-        if (en.error) { $('mfaErr').textContent = en.error.message; return; }
-        factorId = en.data.id; enrolling = true;
-        $('mfaTitle').textContent = 'Set up your authenticator';
-        $('mfaHelp').textContent = 'Scan this with Google Authenticator / Authy / 1Password, then type the 6-digit code it shows.';
-        var img = h('img', { src: en.data.totp.qr_code, alt: 'QR code', width: '190', height: '190', style: 'background:#fff;border-radius:8px;padding:6px' });
-        clear($('mfaQr')); $('mfaQr').appendChild(img);
-        $('mfaSecret').textContent = 'Or enter this key by hand: ' + en.data.totp.secret;
+    $('mfaIn').value = '';
+    $('mfaErr').textContent = '';
+    $('mfaQr').replaceChildren();
+    $('mfaSecret').textContent = '';
+    $('mfaTitle').textContent = 'Enter your 6-digit code';
+    $('mfaBtn').textContent = 'VERIFY';
+    $('mfaBtn').disabled = false;
+
+    var factorId = null;
+    var busy = false;
+
+    // A verified factor still exists in Supabase even if its entry was
+    // deleted from the Google Authenticator app. Do not silently remove it.
+    if (verifiedFactors.length > 0) {
+      $('mfaTitle').textContent = 'Verify your registered authenticator';
+      $('mfaHelp').textContent =
+        'Supabase still has a verified authenticator registered. Open the matching entry on a device where it is still available.';
+
+      if (verifiedFactors.length === 1) {
+        factorId = verifiedFactors[0].id;
+      } else {
+        var selector = h('select', { 'aria-label': 'Choose registered authenticator' });
+        verifiedFactors.forEach(function (factor, index) {
+          selector.appendChild(h('option', {
+            value: factor.id,
+            text: factor.friendly_name || ('Authenticator ' + (index + 1))
+          }));
+        });
+        factorId = selector.value;
+        selector.addEventListener('change', function () {
+          factorId = selector.value;
+        });
+        $('mfaHelp').appendChild(document.createTextNode(' Select the authenticator: '));
+        $('mfaHelp').appendChild(selector);
       }
-      if (verified) { factorId = verified.id; $('mfaHelp').textContent = 'Open your authenticator app.'; }
-      else setup();
-      async function go() {
-        var code = $('mfaIn').value.replace(/\s/g, ''); if (!/^\d{6}$/.test(code)) { $('mfaErr').textContent = 'Enter the 6 digits.'; return; }
-        $('mfaBtn').disabled = true;
-        var r = await sb.auth.mfa.challengeAndVerify({ factorId: factorId, code: code });
-        $('mfaBtn').disabled = false;
-        if (r.error) { $('mfaErr').textContent = 'Wrong or expired code.'; $('mfaIn').value = ''; return; }
-        resolve();
+
+      $('mfaSecret').textContent =
+        'Lost the entry in Google Authenticator? This page cannot safely remove a verified factor. Use your account recovery process; do not share your service-role key.';
+    } else {
+      // No verified TOTP factor exists: offer a fresh enrollment.
+      $('mfaTitle').textContent = 'Set up a new authenticator';
+      $('mfaHelp').textContent =
+        'Scan this QR code with Google Authenticator, then enter the six-digit code it generates.';
+
+      var pendingFactors = allFactors.filter(function (factor) {
+        return factor.factor_type === 'totp' && factor.status !== 'verified';
+      });
+
+      // Leave existing pending factors untouched. If the project has reached
+      // its factor limit, show the error rather than deleting factors silently.
+      var enrollment = await auth.enroll({
+        factorType: 'totp',
+        friendlyName: 'Owner authenticator'
+      });
+
+      if (enrollment.error) {
+        var extra = pendingFactors.length
+          ? ' An unfinished enrollment already exists; inspect it in Supabase before removing anything.'
+          : '';
+        throw new Error('Could not start authenticator enrollment: ' + enrollment.error.message + extra);
       }
-      $('mfaBtn').onclick = go;
-      $('mfaIn').onkeydown = function (e) { if (e.key === 'Enter') go(); };
+
+      factorId = enrollment.data.id;
+
+      var qr = h('img', {
+        src: enrollment.data.totp.qr_code,
+        alt: 'Authenticator enrollment QR code',
+        width: '190',
+        height: '190',
+        style: 'background:#fff;border-radius:8px;padding:6px'
+      });
+      $('mfaQr').appendChild(qr);
+      $('mfaSecret').textContent =
+        'Manual setup key: ' + enrollment.data.totp.secret +
+        ' — keep this key private.';
+    }
+
+    async function verify() {
+      if (busy) return;
+
+      var code = $('mfaIn').value.replace(/\s/g, '');
+      if (!/^\d{6}$/.test(code)) {
+        setError('Enter the six-digit code from your authenticator.');
+        return;
+      }
+      if (!factorId) {
+        setError('No authenticator factor is selected. Reload the page and try again.');
+        return;
+      }
+
+      busy = true;
+      setBusy(true, 'VERIFYING...');
+      setError('');
+
+      try {
+        var result = await auth.challengeAndVerify({
+          factorId: factorId,
+          code: code
+        });
+
+        if (result.error) throw result.error;
+
+        var updated = await auth.getAuthenticatorAssuranceLevel();
+        if (updated.error || !updated.data || updated.data.currentLevel !== 'aal2') {
+          throw new Error('The code was accepted, but the session did not reach the required security level. Sign out and sign in again.');
+        }
+
+        setBusy(false, 'VERIFIED');
+        $('mfaIn').value = '';
+        // Resolving boot() allows the protected console to load.
+        return resolveMfa();
+      } catch (error) {
+        setError(error && error.message
+          ? error.message
+          : 'Verification failed. Check the code and try again.');
+        $('mfaIn').value = '';
+        $('mfaIn').focus();
+      } finally {
+        busy = false;
+        if ($('mfaBtn').textContent !== 'VERIFIED') setBusy(false, 'VERIFY');
+      }
+    }
+
+    return new Promise(function (resolve, reject) {
+      // Keep a reference so successful verification can continue boot().
+      resolveMfa = resolve;
+      $('mfaBtn').onclick = verify;
+      $('mfaIn').onkeydown = function (event) {
+        if (event.key === 'Enter') verify();
+      };
     });
   }
 
